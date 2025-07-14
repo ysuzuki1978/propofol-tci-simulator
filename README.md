@@ -6,6 +6,12 @@
 
 A Progressive Web Application (PWA) for propofol target-controlled infusion (TCI) anesthesia management based on the Eleveld et al. (2018) pharmacokinetic-pharmacodynamic model. This integrated system provides real-time plasma and effect-site concentration predictions with BIS monitoring capabilities for clinical education and research.
 
+## Quick Access
+
+**🌐 Live Application**: [https://ysuzuki1978.github.io/propofol-tci-simulator/](https://ysuzuki1978.github.io/propofol-tci-simulator/)
+
+This application is immediately available online without installation. Access the live version directly through your web browser for instant use.
+
 ## ⚠️ Disclaimer
 
 **This application is intended for educational and research purposes only. Do not use for clinical diagnosis or treatment decisions. All clinical judgments must be made by qualified healthcare professionals. The authors assume no responsibility for consequences arising from clinical use of this software.**
