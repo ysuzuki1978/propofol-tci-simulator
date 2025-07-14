@@ -1,0 +1,40 @@
+{
+  "name": "propofol-tci-simulator",
+  "version": "1.0.0",
+  "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Real-time BIS Monitoring - Eleveld PK/PD Model",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "serve": "python -m http.server 8000",
+    "test": "echo \"No tests specified\" && exit 0",
+    "lint": "echo \"No linting configured\" && exit 0"
+  },
+  "keywords": [
+    "medical",
+    "anesthesia",
+    "propofol",
+    "TCI",
+    "TIVA",
+    "pharmacokinetics",
+    "pharmacodynamics",
+    "eleveld",
+    "BIS",
+    "PWA"
+  ],
+  "author": "Yasuyuki Suzuki, MD, PhD <ysuzuki1978@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ysuzuki1978/propofol-tci-simulator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ysuzuki1978/propofol-tci-simulator/issues"
+  },
+  "homepage": "https://ysuzuki1978.github.io/propofol-tci-simulator/",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

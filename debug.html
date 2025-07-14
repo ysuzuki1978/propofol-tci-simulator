@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remimazolam Debug Test</title>
+</head>
+<body>
+    <h1>Remimazolam Integration Debug Test</h1>
+    <div id="output"></div>
+    
+    <!-- JavaScript Modules in correct order -->
+    <script src="utils/masui-ke0-calculator.js"></script>
+    <script src="js/models.js"></script>
+    <script src="js/remimazolam-pk-pd.js"></script>
+    
+    <script>
+        function log(message) {
+            console.log(message);
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+        }
+        
+        try {
+            log('Starting debug test...');
+            
+            // Check if classes are defined
+            log('MasuiKe0Calculator: ' + (typeof MasuiKe0Calculator !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            log('SexType: ' + (typeof SexType !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            log('AsapsType: ' + (typeof AsapsType !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            log('PKParameters: ' + (typeof PKParameters !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            log('PDParameters: ' + (typeof PDParameters !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            log('RemimazolamPKPDCalculator: ' + (typeof RemimazolamPKPDCalculator !== 'undefined' ? 'OK' : 'NOT DEFINED'));
+            
+            // Test patient creation
+            const now = new Date();
+            now.setHours(8, 0, 0, 0);
+            
+            const testPatient = new Patient(
+                'TestPatient',
+                35,        // age
+                70.0,      // weight
+                170.0,     // height
+                SexType.MALE,
+                AsapsType.CLASS_1_2,
+                OpioidType.YES,
+                now
+            );
+            
+            log('Test patient created: ' + testPatient.id);
+            log('Patient sex: ' + testPatient.sex + ' (SexType.MALE: ' + SexType.MALE + ')');
+            log('Patient ASA: ' + testPatient.asaPS + ' (AsapsType.CLASS_1_2: ' + AsapsType.CLASS_1_2 + ')');
+            
+            // Test Masui calculation directly
+            log('Testing MasuiKe0Calculator directly...');
+            const masuiResult = MasuiKe0Calculator.calculateKe0Complete(35, 70.0, 170.0, 0, 1);
+            log('Masui calculation success: ' + masuiResult.success);
+            
+            if (masuiResult.success) {
+                log('ke0_numerical: ' + masuiResult.ke0_numerical);
+                log('ke0_regression: ' + masuiResult.ke0_regression);
+            } else {
+                log('Masui error: ' + masuiResult.error);
+            }
+            
+            // Test RemimazolamPKPDCalculator
+            log('Testing RemimazolamPKPDCalculator...');
+            const remiParams = RemimazolamPKPDCalculator.getModelParameters(testPatient);
+            log('Remimazolam calculation successful!');
+            log('V1: ' + remiParams.pk.v1.toFixed(3));
+            log('ke0: ' + remiParams.pk.ke0.toFixed(4));
+            
+        } catch (error) {
+            log('ERROR: ' + error.message);
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

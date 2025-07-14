@@ -1,0 +1,100 @@
+{
+  "name": "Propofol TCI TIVA V1.0.0",
+  "short_name": "PropoTCI",
+  "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Real-time BIS Monitoring - Eleveld PK/PD Model",
+  "version": "1.0.0",
+  "scope": "/",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape-primary",
+  "theme_color": "#2196F3",
+  "background_color": "#ffffff",
+  "categories": ["medical", "education", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  
+  "icons": [
+    {
+      "src": "images/icon-32.png",
+      "sizes": "32x32", 
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  
+  "shortcuts": [
+    {
+      "name": "Real-time Induction with BIS",
+      "short_name": "Induction",
+      "description": "Real-time propofol induction with BIS monitoring",
+      "url": "./index.html#induction",
+      "icons": [
+        {
+          "src": "images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Protocol Optimization", 
+      "short_name": "Protocol",
+      "description": "Advanced step-down protocol optimization",
+      "url": "./index.html#protocol",
+      "icons": [
+        {
+          "src": "images/icon-192.png", 
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Dose Monitoring",
+      "short_name": "Monitor", 
+      "description": "Actual dose input and concentration monitoring",
+      "url": "./index.html#monitoring",
+      "icons": [
+        {
+          "src": "images/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "images/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "images/screenshot-narrow.png", 
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+
+  "prefer_related_applications": false,
+  
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}

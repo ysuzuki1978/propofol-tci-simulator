@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG to PNG Converter</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .converter { margin: 20px 0; border: 1px solid #ccc; padding: 15px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        button { padding: 10px 20px; margin: 5px; background: #2196F3; color: white; border: none; cursor: pointer; }
+        button:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <h1>SVG to PNG Converter for PWA Icons</h1>
+    
+    <div class="converter">
+        <h3>32x32 Icon</h3>
+        <canvas id="canvas32" width="32" height="32"></canvas>
+        <button onclick="convertSVGToPNG('icon-32.svg', 'canvas32', 32, 'icon-32.png')">Convert & Download</button>
+    </div>
+    
+    <div class="converter">
+        <h3>192x192 Icon</h3>
+        <canvas id="canvas192" width="192" height="192"></canvas>
+        <button onclick="convertSVGToPNG('icon-192.svg', 'canvas192', 192, 'icon-192.png')">Convert & Download</button>
+    </div>
+    
+    <div class="converter">
+        <h3>512x512 Icon</h3>
+        <canvas id="canvas512" width="512" height="512"></canvas>
+        <button onclick="convertSVGToPNG('icon-512.svg', 'canvas512', 512, 'icon-512.png')">Convert & Download</button>
+    </div>
+    
+    <button onclick="convertAllIcons()">Convert All Icons</button>
+    
+    <script>
+        function convertSVGToPNG(svgPath, canvasId, size, filename) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            fetch(`./images/${svgPath}`)
+                .then(response => response.text())
+                .then(svgText => {
+                    const img = new Image();
+                    const svgBlob = new Blob([svgText], {type: 'image/svg+xml;charset=utf-8'});
+                    const url = URL.createObjectURL(svgBlob);
+                    
+                    img.onload = function() {
+                        ctx.clearRect(0, 0, size, size);
+                        ctx.drawImage(img, 0, 0, size, size);
+                        
+                        // Download as PNG
+                        const link = document.createElement('a');
+                        link.download = filename;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        URL.revokeObjectURL(url);
+                    };
+                    
+                    img.src = url;
+                })
+                .catch(error => {
+                    console.error('Error loading SVG:', error);
+                    // Create fallback icon directly on canvas
+                    createFallbackIcon(canvasId, size, filename);
+                });
+        }
+        
+        function createFallbackIcon(canvasId, size, filename) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#2196F3');
+            gradient.addColorStop(1, '#1976D2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Text
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (size >= 192) {
+                ctx.font = `bold ${Math.floor(size/5)}px Arial`;
+                ctx.fillText('TCI', size/2, size/2 - size/8);
+                
+                ctx.font = `${Math.floor(size/8)}px Arial`;
+                ctx.fillText('PROP', size/2, size/2 + size/8);
+            } else {
+                ctx.font = `bold ${Math.floor(size/2.2)}px Arial`;
+                ctx.fillText('P', size/2, size/2);
+            }
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function convertAllIcons() {
+            setTimeout(() => convertSVGToPNG('icon-32.svg', 'canvas32', 32, 'icon-32.png'), 100);
+            setTimeout(() => convertSVGToPNG('icon-192.svg', 'canvas192', 192, 'icon-192.png'), 200);
+            setTimeout(() => convertSVGToPNG('icon-512.svg', 'canvas512', 512, 'icon-512.png'), 300);
+        }
+        
+        // Create fallback icons immediately
+        window.onload = function() {
+            createFallbackIcon('canvas32', 32, 'temp-32');
+            createFallbackIcon('canvas192', 192, 'temp-192');
+            createFallbackIcon('canvas512', 512, 'temp-512');
+        };
+    </script>
+</body>
+</html>

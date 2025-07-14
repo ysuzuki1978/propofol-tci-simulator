@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PWA Icon Generator for Propofol TCI TIVA</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-group { margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #2196F3; color: white; border: none; cursor: pointer; }
+        button:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator for Propofol TCI TIVA V1.0.0</h1>
+    
+    <div class="icon-group">
+        <h3>32x32 Icon</h3>
+        <canvas id="canvas32" width="32" height="32"></canvas>
+        <button onclick="downloadIcon('canvas32', 'icon-32.png')">Download 32x32</button>
+    </div>
+    
+    <div class="icon-group">
+        <h3>192x192 Icon</h3>
+        <canvas id="canvas192" width="192" height="192"></canvas>
+        <button onclick="downloadIcon('canvas192', 'icon-192.png')">Download 192x192</button>
+    </div>
+    
+    <div class="icon-group">
+        <h3>512x512 Icon</h3>
+        <canvas id="canvas512" width="512" height="512"></canvas>
+        <button onclick="downloadIcon('canvas512', 'icon-512.png')">Download 512x512</button>
+    </div>
+    
+    <button onclick="generateAllIcons()">Generate All Icons</button>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#2196F3');
+            gradient.addColorStop(1, '#1976D2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Add subtle border
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = Math.max(1, size / 40);
+            ctx.strokeRect(0, 0, size, size);
+            
+            // Text styling
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (size >= 192) {
+                // Large icons: TCI + PROP
+                ctx.font = `bold ${Math.floor(size/5)}px Arial`;
+                ctx.fillText('TCI', size/2, size/2 - size/8);
+                
+                ctx.font = `${Math.floor(size/8)}px Arial`;
+                ctx.fillText('PROP', size/2, size/2 + size/8);
+                
+                // Add medical cross symbol
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.lineWidth = size / 30;
+                const crossSize = size / 10;
+                const centerX = size/2 + size/4;
+                const centerY = size/2 - size/4;
+                
+                // Horizontal line
+                ctx.beginPath();
+                ctx.moveTo(centerX - crossSize, centerY);
+                ctx.lineTo(centerX + crossSize, centerY);
+                ctx.stroke();
+                
+                // Vertical line
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - crossSize);
+                ctx.lineTo(centerX, centerY + crossSize);
+                ctx.stroke();
+                
+            } else {
+                // Small icons: just "P"
+                ctx.font = `bold ${Math.floor(size/2.2)}px Arial`;
+                ctx.fillText('P', size/2, size/2);
+            }
+        }
+        
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function generateAllIcons() {
+            createIcon('canvas32', 32);
+            createIcon('canvas192', 192);
+            createIcon('canvas512', 512);
+            
+            alert('All icons generated! Click individual download buttons to save them.');
+        }
+        
+        // Generate icons on page load
+        window.onload = function() {
+            generateAllIcons();
+        };
+    </script>
+</body>
+</html>

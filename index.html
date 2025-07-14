@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propofol TCI TIVA - Effect-site Concentration Target Controlled Infusion Integrated System</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Propofol TCI TIVA">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2>Propofol TCI TIVA</h2>
+            <p>Initializing system...</p>
+        </div>
+    </div>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="modal active">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Disclaimer</h2>
+            </div>
+            <div class="modal-body">
+                <div class="disclaimer-content">
+                    <h3>Important Notice</h3>
+                    <ul>
+                        <li>This application is <strong>for educational and research purposes only</strong></li>
+                        <li>Do not use as a basis for clinical diagnosis or treatment</li>
+                        <li>All clinical decisions must be made by qualified healthcare professionals</li>
+                        <li>Calculation results are theoretical values and do not guarantee actual patient responses</li>
+                        <li>The developer assumes no responsibility for any consequences of using this application</li>
+                    </ul>
+                    
+                    <h3>Scientific Basis</h3>
+                    <p>This system is based on the propofol pharmacokinetic-pharmacodynamic model by Eleveld et al. (2018) BJA.</p>
+                    
+                    <h3>Developer Information</h3>
+                    <p>YASUYUKI SUZUKI - Ehime University Graduate School of Medicine, Department of Pharmacology</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="acceptDisclaimer" class="btn btn-primary">
+    Accept and Start
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Propofol TCI TIVA</h1>
+                <p>Effect-site Concentration Target Controlled Infusion Integrated System - Propofol Pharmacokinetic-Pharmacodynamic Model</p>
+            </div>
+        </header>
+
+        <!-- Patient Information Panel -->
+        <section id="patientPanel" class="panel patient-panel">
+            <div class="panel-header">
+                <h2>📋 Patient Information</h2>
+                <button id="editPatientBtn" class="btn btn-secondary">Edit</button>
+            </div>
+            <div class="panel-content">
+                <div class="patient-info-grid">
+                    <div class="info-item">
+                        <label>Patient ID:</label>
+                        <span id="patientId">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Age:</label>
+                        <span id="patientAge">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Weight:</label>
+                        <span id="patientWeight">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Height:</label>
+                        <span id="patientHeight">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>BMI:</label>
+                        <span id="patientBMI">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Sex:</label>
+                        <span id="patientSex">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>ASA-PS:</label>
+                        <span id="patientASA">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Opioid Co-admin:</label>
+                        <span id="patientOpioid">---</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Anesthesia Start Time:</label>
+                        <span id="anesthesiaStartTime">---</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- App Grid Container -->
+        <div class="app-grid">
+            <!-- App 1: Real-time Induction -->
+            <section id="inductionPanel" class="panel app-panel">
+                <div class="panel-header">
+                    <h2>🚀 Real-time Induction Prediction</h2>
+                    <div class="panel-controls">
+                        <button id="startInductionBtn" class="btn btn-primary">Start</button>
+                        <button id="stopInductionBtn" class="btn btn-danger hidden">Stop</button>
+                        <button id="recordSnapshotBtn" class="btn btn-info hidden">Record</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="induction-controls">
+                        <div class="dose-input">
+                            <label for="inductionBolus">Bolus Dose (mg):</label>
+                            <input type="range" id="inductionBolus" min="10" max="200" step="5" value="140">
+                            <span id="inductionBolusValue">140</span>
+                        </div>
+                        <div class="dose-input">
+                            <label for="inductionContinuous">Continuous Infusion Rate (mg/hr):</label>
+                            <input type="range" id="inductionContinuous" min="0" max="500" step="10" value="200">
+                            <span id="inductionContinuousValue">200</span>
+                        </div>
+                    </div>
+
+                    <div class="concentration-display">
+                        <div class="conc-item">
+                            <label>Plasma Concentration:</label>
+                            <span id="plasmaConcentration" class="concentration-value">0.000</span>
+                            <span class="unit">μg/mL</span>
+                        </div>
+                        <div class="conc-item">
+                            <label>Effect-site Concentration:</label>
+                            <span id="effectConcentration" class="concentration-value">0.000</span>
+                            <span class="unit">μg/mL</span>
+                        </div>
+                        <div class="conc-item">
+                            <label>BIS Value:</label>
+                            <span id="inductionBISValue" class="concentration-value">100.0</span>
+                            <span class="unit">(Sedation Level)</span>
+                        </div>
+                        <div class="conc-item">
+                            <label>Elapsed Time:</label>
+                            <span id="elapsedTime" class="time-value">00:00:00</span>
+                        </div>
+                    </div>
+
+                    <div class="realtime-chart-container">
+                        <canvas id="inductionRealtimeChart"></canvas>
+                    </div>
+
+                    <div id="snapshotsSection" class="snapshots-section hidden">
+                        <h3 id="snapshotsTitle">Records</h3>
+                        <div id="snapshotsList" class="snapshots-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- App 2: Protocol Optimization -->
+            <section id="protocolPanel" class="panel app-panel">
+                <div class="panel-header">
+                    <h2>🎯 Advanced Step-down Protocol Optimization</h2>
+                    <button id="optimizeProtocolBtn" class="btn btn-primary">Run Optimization</button>
+                </div>
+                <div class="panel-content">
+                    <div class="protocol-controls">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="targetConcentration">Target Effect-site Concentration (μg/mL):</label>
+                                <input type="number" id="targetConcentration" min="0.5" max="8.0" step="0.1" value="3.0">
+                            </div>
+                            <div class="input-group">
+                                <label for="protocolBolus">Bolus Dose (mg):</label>
+                                <input type="number" id="protocolBolus" min="10" max="200" step="5" value="140">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="targetReachTime">Target Reach Time (min):</label>
+                                <input type="number" id="targetReachTime" min="10" max="60" step="5" value="20">
+                            </div>
+                            <div class="input-group">
+                                <label for="upperThresholdRatio">Upper Threshold Ratio (%):</label>
+                                <input type="number" id="upperThresholdRatio" min="105" max="130" step="1" value="120">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="reductionFactor">Reduction Factor (%):</label>
+                                <input type="number" id="reductionFactor" min="50" max="90" step="5" value="70">
+                            </div>
+                            <div class="input-group">
+                                <label for="adjustmentInterval">Adjustment Interval (min):</label>
+                                <input type="number" id="adjustmentInterval" min="3" max="10" step="1" value="5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="protocolResults" class="protocol-results hidden">
+                        <div class="results-summary">
+                            <div class="result-item">
+                                <label>Optimal Infusion Rate:</label>
+                                <span id="optimalRate">---</span>
+                                <span class="unit">mg/hr</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Predicted Final Concentration:</label>
+                                <span id="predictedFinalCe">---</span>
+                                <span class="unit">μg/mL</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Target Accuracy:</label>
+                                <span id="targetAccuracy">---</span>
+                                <span class="unit">%</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Number of Adjustments:</label>
+                                <span id="adjustmentCount">---</span>
+                                <span class="unit">times</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Stability Index:</label>
+                                <span id="stabilityIndex">---</span>
+                                <span class="unit">/100</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Convergence Time:</label>
+                                <span id="convergenceTime">---</span>
+                                <span class="unit">min</span>
+                            </div>
+                        </div>
+
+                        <div class="protocol-chart-container">
+                            <canvas id="protocolChart"></canvas>
+                        </div>
+
+                        <div class="protocol-schedule">
+                            <h4>Dosing Schedule</h4>
+                            <div id="protocolTable" class="protocol-table"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- App 3: Live Monitoring -->
+            <section id="monitoringPanel" class="panel app-panel monitoring-panel">
+                <div class="panel-header">
+                    <h2>📊 Actual Dose Monitoring</h2>
+                    <div class="panel-controls">
+                        <button id="addDoseBtn" class="btn btn-primary">Add Dose</button>
+                        <button id="runSimulationBtn" class="btn btn-success">Run Simulation</button>
+                        <button id="exportCsvBtn" class="btn btn-info">Export CSV</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="dose-events-section">
+                        <h4>Dose Events</h4>
+                        <div id="doseEventsList" class="dose-events-list"></div>
+                    </div>
+
+                    <div id="simulationResults" class="simulation-results hidden">
+                        <div class="results-summary">
+                            <div class="result-item">
+                                <label>Maximum Plasma Concentration:</label>
+                                <span id="maxPlasmaConc">---</span>
+                                <span class="unit">μg/mL</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Maximum Effect-site Concentration:</label>
+                                <span id="maxEffectConc">---</span>
+                                <span class="unit">μg/mL</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Minimum BIS Value:</label>
+                                <span id="minBISValue">---</span>
+                                <span class="unit">(Sedation Level)</span>
+                            </div>
+                            <div class="result-item">
+                                <label>Calculation Method:</label>
+                                <span id="calculationMethod">---</span>
+                            </div>
+                        </div>
+
+                        <div class="monitoring-chart-container">
+                            <canvas id="monitoringChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Patient Edit Modal -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Patient Information</h3>
+                <button id="closePatientModal" class="btn-close">&times;</button>
+            </div>
+            <form id="patientForm" class="modal-body">
+                <div class="form-group">
+                    <label for="editPatientId">Patient ID:</label>
+                    <input type="text" id="editPatientId" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editAge">Age (years):</label>
+                        <input type="range" id="editAge" min="1" max="100" value="35">
+                        <span id="ageValue" class="slider-value">35</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="editWeight">Weight (kg):</label>
+                        <input type="range" id="editWeight" min="5" max="150" step="0.1" value="70">
+                        <span id="weightValue" class="slider-value">70.0</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editHeight">Height (cm):</label>
+                        <input type="range" id="editHeight" min="50" max="200" value="170">
+                        <span id="heightValue" class="slider-value">170</span>
+                    </div>
+                    <div class="form-group">
+                        <label>BMI:</label>
+                        <span id="bmiCalculated" class="calculated-value">24.2</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sex:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="sex" value="male" checked> Male</label>
+                            <label><input type="radio" name="sex" value="female"> Female</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ASA-PS:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="asa" value="1-2" checked> I-II</label>
+                            <label><input type="radio" name="asa" value="3-4"> III-IV</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opioid Co-administration:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="opioid" value="yes" checked> Yes</label>
+                        <label><input type="radio" name="opioid" value="no"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editAnesthesiaStart">Anesthesia Start Time:</label>
+                    <input type="time" id="editAnesthesiaStart" value="08:00">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button id="cancelPatientEdit" class="btn btn-secondary">Cancel</button>
+                <button type="submit" form="patientForm" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dose Event Modal -->
+    <div id="doseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Dose Event</h3>
+                <button id="closeDoseModal" class="btn-close">&times;</button>
+            </div>
+            <form id="doseForm" class="modal-body">
+                <div class="form-group">
+                    <label for="doseTime">Dose Time:</label>
+                    <input type="time" id="doseTime" required>
+                    <small>Anesthesia Start Time: <span id="anesthesiaStartReference">08:00</span></small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="doseBolusAmount">Bolus Dose (mg):</label>
+                        <input type="range" id="doseBolusAmount" min="0" max="200" step="1" value="0">
+                        <span id="doseBolusValue" class="slider-value">0.0</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="doseContinuousRate">Continuous Infusion Rate (mg/hr):</label>
+                        <input type="range" id="doseContinuousRate" min="0" max="500" step="5" value="0">
+                        <span id="doseContinuousValue" class="slider-value">0</span>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button id="cancelDoseAdd" class="btn btn-secondary">Cancel</button>
+                <button type="submit" form="doseForm" class="btn btn-primary">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="utils/lsoda.js"></script>
+    <script src="utils/vhac.js"></script>
+    <script src="utils/masui-ke0-calculator.js"></script>
+    <script src="js/models.js"></script>
+    <script src="js/eleveld-pk-pd.js"></script>
+    <script src="js/remimazolam-pk-pd.js"></script>
+    <script src="js/induction-engine.js"></script>
+    <script src="js/protocol-engine.js"></script>
+    <script src="js/advanced-protocol-engine.js"></script>
+    <script src="js/monitoring-engine.js"></script>
+    <script src="js/realtime-chart.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        } else {
+            console.log('Service Worker not available (file:// protocol or browser not supported)');
+        }
+    </script>
+</body>
+</html>

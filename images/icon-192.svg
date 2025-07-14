@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" fill="url(#grad192)" />
+  <text x="96" y="72" font-family="Arial, sans-serif" font-size="38" font-weight="bold" text-anchor="middle" dominant-baseline="central" fill="white">TCI</text>
+  <text x="96" y="120" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" dominant-baseline="central" fill="white">PROP</text>
+  <!-- Medical cross -->
+  <g stroke="rgba(255,255,255,0.6)" stroke-width="3" fill="none">
+    <line x1="140" y1="48" x2="164" y2="48" />
+    <line x1="152" y1="36" x2="152" y2="60" />
+  </g>
+</svg>
