@@ -55,6 +55,9 @@ class MainApplicationController {
         this.updatePatientDisplay();
         this.updateAllPanelStates();
         
+        // Initialize adjust button states
+        this.initializeAdjustButtonStates();
+        
         console.log('Application initialized successfully');
     }
 
@@ -104,8 +107,8 @@ class MainApplicationController {
             this.savePatientData(e);
         });
         
-        // Patient form sliders
-        this.setupPatientFormSliders();
+        // Patient form controls
+        this.setupPatientFormControls();
         
         // Induction panel
         document.getElementById('startInductionBtn').addEventListener('click', () => {
@@ -120,8 +123,8 @@ class MainApplicationController {
             this.recordSnapshot();
         });
         
-        // Induction dose sliders
-        this.setupInductionSliders();
+        // Induction dose controls
+        this.setupInductionControls();
         
         // Protocol panel
         document.getElementById('optimizeProtocolBtn').addEventListener('click', () => {
@@ -154,8 +157,11 @@ class MainApplicationController {
             this.addDoseEvent(e);
         });
         
-        // Dose form sliders
-        this.setupDoseFormSliders();
+        // Dose form controls
+        this.setupDoseFormControls();
+        
+        // Setup adjust buttons
+        this.setupAdjustButtons();
         
         // Modal backdrop clicks
         document.querySelectorAll('.modal').forEach(modal => {
@@ -167,59 +173,222 @@ class MainApplicationController {
         });
     }
 
-    setupPatientFormSliders() {
-        const ageSlider = document.getElementById('editAge');
-        const weightSlider = document.getElementById('editWeight');
-        const heightSlider = document.getElementById('editHeight');
+    setupPatientFormControls() {
+        const ageInput = document.getElementById('editAge');
+        const weightInput = document.getElementById('editWeight');
+        const heightInput = document.getElementById('editHeight');
         
-        ageSlider.addEventListener('input', (e) => {
-            document.getElementById('ageValue').textContent = e.target.value;
+        // Add input event listeners
+        ageInput.addEventListener('input', (e) => {
             this.updateBMICalculation();
         });
         
-        weightSlider.addEventListener('input', (e) => {
-            document.getElementById('weightValue').textContent = parseFloat(e.target.value).toFixed(1);
+        weightInput.addEventListener('input', (e) => {
             this.updateBMICalculation();
         });
         
-        heightSlider.addEventListener('input', (e) => {
-            document.getElementById('heightValue').textContent = e.target.value;
+        heightInput.addEventListener('input', (e) => {
             this.updateBMICalculation();
         });
     }
 
-    setupInductionSliders() {
-        const bolusSlider = document.getElementById('inductionBolus');
-        const continuousSlider = document.getElementById('inductionContinuous');
+    setupInductionControls() {
+        const bolusInput = document.getElementById('inductionBolus');
+        const continuousInput = document.getElementById('inductionContinuous');
         
-        bolusSlider.addEventListener('input', (e) => {
+        // Add input event listeners
+        bolusInput.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
-            document.getElementById('inductionBolusValue').textContent = value.toFixed(1);
             if (this.appState.isInductionRunning) {
-                this.inductionEngine.updateDose(value, parseFloat(continuousSlider.value));
+                this.inductionEngine.updateDose(value, parseFloat(continuousInput.value));
             }
         });
         
-        continuousSlider.addEventListener('input', (e) => {
+        continuousInput.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
-            document.getElementById('inductionContinuousValue').textContent = value.toFixed(1);
             if (this.appState.isInductionRunning) {
-                this.inductionEngine.updateDose(parseFloat(bolusSlider.value), value);
+                this.inductionEngine.updateDose(parseFloat(bolusInput.value), value);
             }
         });
     }
 
-    setupDoseFormSliders() {
-        const bolusSlider = document.getElementById('doseBolusAmount');
-        const continuousSlider = document.getElementById('doseContinuousRate');
+    setupDoseFormControls() {
+        // No special handling needed for dose form inputs
+        // Values are read directly when form is submitted
+    }
+    
+    setupAdjustButtons() {
+        this.holdTimeout = null;
+        this.holdInterval = null;
+        this.holdSpeed = 200; // Initial speed in ms
+        this.holdAcceleration = 0.9; // Speed multiplier for acceleration
+        this.minHoldSpeed = 50; // Minimum interval (maximum speed)
         
-        bolusSlider.addEventListener('input', (e) => {
-            document.getElementById('doseBolusValue').textContent = parseFloat(e.target.value).toFixed(1);
+        // Mouse events
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('btn-adjust')) {
+                e.preventDefault();
+                this.startHold(e.target);
+            }
         });
         
-        continuousSlider.addEventListener('input', (e) => {
-            document.getElementById('doseContinuousValue').textContent = parseFloat(e.target.value).toFixed(2);
+        document.addEventListener('mouseup', (e) => {
+            this.stopHold();
         });
+        
+        document.addEventListener('mouseleave', (e) => {
+            this.stopHold();
+        });
+        
+        // Touch events for mobile
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('btn-adjust')) {
+                e.preventDefault();
+                this.startHold(e.target);
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.stopHold();
+        }, { passive: false });
+        
+        document.addEventListener('touchcancel', (e) => {
+            this.stopHold();
+        });
+        
+        // Prevent context menu on long press
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.classList.contains('btn-adjust')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Stop holding when window loses focus or visibility
+        window.addEventListener('blur', () => {
+            this.stopHold();
+        });
+        
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stopHold();
+            }
+        });
+        
+        // Stop holding when scrolling (mobile)
+        window.addEventListener('scroll', () => {
+            this.stopHold();
+        }, { passive: true });
+    }
+    
+    startHold(button) {
+        // Stop any existing hold
+        this.stopHold();
+        
+        // Immediate first action
+        this.handleAdjustButton(button);
+        
+        // Add holding visual feedback
+        button.classList.add('holding');
+        
+        // Start hold after delay
+        this.holdTimeout = setTimeout(() => {
+            this.holdSpeed = 200; // Reset speed
+            this.startHoldInterval(button);
+        }, 500); // 500ms delay before starting continuous action
+    }
+    
+    startHoldInterval(button) {
+        this.holdInterval = setInterval(() => {
+            this.handleAdjustButton(button);
+            
+            // Accelerate (decrease interval time)
+            this.holdSpeed = Math.max(this.holdSpeed * this.holdAcceleration, this.minHoldSpeed);
+            
+            // Restart interval with new speed
+            clearInterval(this.holdInterval);
+            this.startHoldInterval(button);
+        }, this.holdSpeed);
+    }
+    
+    stopHold() {
+        if (this.holdTimeout) {
+            clearTimeout(this.holdTimeout);
+            this.holdTimeout = null;
+        }
+        
+        if (this.holdInterval) {
+            clearInterval(this.holdInterval);
+            this.holdInterval = null;
+        }
+        
+        // Remove visual feedback from all buttons
+        document.querySelectorAll('.btn-adjust.holding').forEach(btn => {
+            btn.classList.remove('holding');
+        });
+        
+        // Reset hold speed
+        this.holdSpeed = 200;
+    }
+    
+    handleAdjustButton(button) {
+        const targetId = button.getAttribute('data-target');
+        const step = parseFloat(button.getAttribute('data-step'));
+        const isPlus = button.classList.contains('btn-plus');
+        const targetInput = document.getElementById(targetId);
+        
+        if (!targetInput) return;
+        
+        const currentValue = parseFloat(targetInput.value) || 0;
+        const min = parseFloat(targetInput.min) || 0;
+        const max = parseFloat(targetInput.max) || Infinity;
+        
+        let newValue;
+        if (isPlus) {
+            newValue = Math.min(currentValue + step, max);
+        } else {
+            newValue = Math.max(currentValue - step, min);
+        }
+        
+        // Only update if value actually changes
+        if (newValue !== currentValue) {
+            // Set the value and trigger input event
+            targetInput.value = newValue;
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // Update button states
+            this.updateAdjustButtonStates(targetInput);
+            
+            // Visual feedback (unless holding)
+            if (!button.classList.contains('holding')) {
+                button.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 100);
+            }
+        } else {
+            // If we've reached a limit, stop holding
+            this.stopHold();
+        }
+    }
+    
+    updateAdjustButtonStates(input) {
+        const targetId = input.id;
+        const currentValue = parseFloat(input.value) || 0;
+        const min = parseFloat(input.min) || 0;
+        const max = parseFloat(input.max) || Infinity;
+        
+        // Find associated buttons
+        const minusBtn = document.querySelector(`.btn-minus[data-target="${targetId}"]`);
+        const plusBtn = document.querySelector(`.btn-plus[data-target="${targetId}"]`);
+        
+        if (minusBtn) {
+            minusBtn.disabled = currentValue <= min;
+        }
+        
+        if (plusBtn) {
+            plusBtn.disabled = currentValue >= max;
+        }
     }
 
     setupInductionCallbacks() {
@@ -258,10 +427,10 @@ class MainApplicationController {
         document.querySelector(`input[name="opioid"][value="${patient.opioidCoadmin === OpioidType.YES ? 'yes' : 'no'}"]`).checked = true;
         document.getElementById('editAnesthesiaStart').value = patient.formattedStartTime;
         
-        // Update display values
-        document.getElementById('ageValue').textContent = patient.age;
-        document.getElementById('weightValue').textContent = patient.weight.toFixed(1);
-        document.getElementById('heightValue').textContent = patient.height;
+        // Initialize adjust button states
+        this.updateAdjustButtonStates(document.getElementById('editAge'));
+        this.updateAdjustButtonStates(document.getElementById('editWeight'));
+        this.updateAdjustButtonStates(document.getElementById('editHeight'));
         this.updateBMICalculation();
         
         modal.classList.add('active');
@@ -278,9 +447,11 @@ class MainApplicationController {
         document.getElementById('doseTime').value = this.appState.patient.formattedStartTime;
         document.getElementById('doseBolusAmount').value = 0;
         document.getElementById('doseContinuousRate').value = 0;
-        document.getElementById('doseBolusValue').textContent = '0.0';
-        document.getElementById('doseContinuousValue').textContent = '0.00';
         document.getElementById('anesthesiaStartReference').textContent = this.appState.patient.formattedStartTime;
+        
+        // Initialize adjust button states
+        this.updateAdjustButtonStates(document.getElementById('doseBolusAmount'));
+        this.updateAdjustButtonStates(document.getElementById('doseContinuousRate'));
         
         modal.classList.add('active');
     }
@@ -925,6 +1096,14 @@ class MainApplicationController {
     updateAllPanelStates() {
         this.updateInductionControls();
         this.updateMonitoringDisplay();
+    }
+    
+    initializeAdjustButtonStates() {
+        // Initialize all adjust button states
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            this.updateAdjustButtonStates(input);
+        });
     }
 }
 

@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title>Propofol TCI TIVA - Effect-site Concentration Target Controlled Infusion Integrated System</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2196F3">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Propofol TCI TIVA">
     
@@ -139,13 +141,19 @@
                     <div class="induction-controls">
                         <div class="dose-input">
                             <label for="inductionBolus">Bolus Dose (mg):</label>
-                            <input type="range" id="inductionBolus" min="10" max="200" step="5" value="140">
-                            <span id="inductionBolusValue">140</span>
+                            <div class="input-group-controls">
+                                <button type="button" class="btn-adjust btn-minus" data-target="inductionBolus" data-step="5">−</button>
+                                <input type="number" id="inductionBolus" min="10" max="200" step="5" value="140">
+                                <button type="button" class="btn-adjust btn-plus" data-target="inductionBolus" data-step="5">+</button>
+                            </div>
                         </div>
                         <div class="dose-input">
                             <label for="inductionContinuous">Continuous Infusion Rate (mg/hr):</label>
-                            <input type="range" id="inductionContinuous" min="0" max="500" step="10" value="200">
-                            <span id="inductionContinuousValue">200</span>
+                            <div class="input-group-controls">
+                                <button type="button" class="btn-adjust btn-minus" data-target="inductionContinuous" data-step="10">−</button>
+                                <input type="number" id="inductionContinuous" min="0" max="500" step="10" value="200">
+                                <button type="button" class="btn-adjust btn-plus" data-target="inductionContinuous" data-step="10">+</button>
+                            </div>
                         </div>
                     </div>
 
@@ -332,21 +340,30 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editAge">Age (years):</label>
-                        <input type="range" id="editAge" min="1" max="100" value="35">
-                        <span id="ageValue" class="slider-value">35</span>
+                        <div class="input-group-controls">
+                            <button type="button" class="btn-adjust btn-minus" data-target="editAge" data-step="1">−</button>
+                            <input type="number" id="editAge" min="1" max="100" step="1" value="35">
+                            <button type="button" class="btn-adjust btn-plus" data-target="editAge" data-step="1">+</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="editWeight">Weight (kg):</label>
-                        <input type="range" id="editWeight" min="5" max="150" step="0.1" value="70">
-                        <span id="weightValue" class="slider-value">70.0</span>
+                        <div class="input-group-controls">
+                            <button type="button" class="btn-adjust btn-minus" data-target="editWeight" data-step="0.5">−</button>
+                            <input type="number" id="editWeight" min="5" max="150" step="0.1" value="70">
+                            <button type="button" class="btn-adjust btn-plus" data-target="editWeight" data-step="0.5">+</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editHeight">Height (cm):</label>
-                        <input type="range" id="editHeight" min="50" max="200" value="170">
-                        <span id="heightValue" class="slider-value">170</span>
+                        <div class="input-group-controls">
+                            <button type="button" class="btn-adjust btn-minus" data-target="editHeight" data-step="1">−</button>
+                            <input type="number" id="editHeight" min="50" max="200" step="1" value="170">
+                            <button type="button" class="btn-adjust btn-plus" data-target="editHeight" data-step="1">+</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>BMI:</label>
@@ -408,13 +425,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="doseBolusAmount">Bolus Dose (mg):</label>
-                        <input type="range" id="doseBolusAmount" min="0" max="200" step="1" value="0">
-                        <span id="doseBolusValue" class="slider-value">0.0</span>
+                        <div class="input-group-controls">
+                            <button type="button" class="btn-adjust btn-minus" data-target="doseBolusAmount" data-step="5">−</button>
+                            <input type="number" id="doseBolusAmount" min="0" max="200" step="1" value="0">
+                            <button type="button" class="btn-adjust btn-plus" data-target="doseBolusAmount" data-step="5">+</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="doseContinuousRate">Continuous Infusion Rate (mg/hr):</label>
-                        <input type="range" id="doseContinuousRate" min="0" max="500" step="5" value="0">
-                        <span id="doseContinuousValue" class="slider-value">0</span>
+                        <div class="input-group-controls">
+                            <button type="button" class="btn-adjust btn-minus" data-target="doseContinuousRate" data-step="10">−</button>
+                            <input type="number" id="doseContinuousRate" min="0" max="500" step="5" value="0">
+                            <button type="button" class="btn-adjust btn-plus" data-target="doseContinuousRate" data-step="10">+</button>
+                        </div>
                     </div>
                 </div>
             </form>
