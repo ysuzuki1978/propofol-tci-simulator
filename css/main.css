@@ -232,6 +232,16 @@ body {
     font-size: var(--font-size-base);
 }
 
+.version {
+    font-size: var(--font-size-base);
+    font-weight: 400;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.2);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    margin-left: var(--spacing-sm);
+}
+
 /* Panel Base Styles */
 .panel {
     background: var(--bg-panel);
@@ -312,6 +322,21 @@ body {
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
     /* Remove height restrictions for full page scroll */
+}
+
+/* Footer */
+.app-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-md) var(--spacing-xl);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.footer-content p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0;
 }
 
 .app-panel {
