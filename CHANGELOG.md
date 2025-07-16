@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-07-16
+
+### Added
+- **±Button Controls**: Replaced difficult-to-use range sliders with precise ±button controls for all numerical inputs
+- **Long-press Functionality**: Added long-press support for rapid value changes with progressive acceleration (500ms delay, 200ms→50ms intervals)
+- **Mobile Touch Optimization**: Enhanced touch targets with 44px buttons (50px on mobile) for improved accessibility
+- **iOS Safari Compatibility**: Fixed modal interaction issues specific to iOS Safari browser
+- **Input Validation**: Comprehensive min/max constraint validation for all input fields
+- **Visual Feedback**: Pulse animation for long-press operations and improved hover states
+
+### Changed
+- **Input Interface**: Complete migration from range sliders to number inputs with adjacent ±buttons
+- **Event Handling**: Unified event delegation system for all adjust buttons
+- **Mobile Responsiveness**: Enhanced mobile layout with larger touch targets and better spacing
+- **Touch Event Processing**: Improved touch event handling for iOS devices to prevent conflicts
+
+### Fixed
+- **iOS Modal Bug**: Resolved "Accept and Start" button unresponsiveness on iOS Safari
+- **Touch Event Conflicts**: Fixed touch event propagation issues between ±buttons and modal interactions
+- **Mobile Input Precision**: Eliminated finger-adjustment difficulties with range sliders
+- **Cross-browser Compatibility**: Ensured consistent behavior across PC Chrome, iPhone Chrome, and Safari
+
+### Technical Details
+- **Progressive Acceleration Algorithm**: Long-press starts after 500ms, accelerates from 200ms to 50ms intervals with 0.9 multiplier
+- **Event Delegation**: Single event listener handles all ±button interactions via data attributes
+- **CSS Touch Optimization**: Added `-webkit-tap-highlight-color: transparent` and proper touch callout prevention
+- **Unified Input System**: Consistent `data-target` and `data-step` attribute system for all controls
+
+### Files Modified
+- `index.html`: Complete input interface redesign with ±button implementation
+- `css/main.css`: Enhanced mobile styling, button animations, and touch optimization
+- `js/main.js`: Long-press functionality and unified event handling system
+- `manifest.json`: Version update to 1.1.1
+
+### Performance Improvements
+- **Memory Efficiency**: Optimized event handling with single delegation listener
+- **Animation Performance**: GPU-accelerated CSS animations for smooth visual feedback
+- **Touch Response**: Reduced touch delay and improved responsiveness on mobile devices
+
 ## [1.1.0] - 2025-01-16
 
 ### Added
