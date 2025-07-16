@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-01-16
+
+### Added
+- **🆕 Mobile-Optimized Digital Picker Components**: Complete replacement of slider inputs with touch-friendly digital pickers
+  - Enhanced +/- buttons with visual feedback and disabled states
+  - Long-press support for rapid value adjustment (0.5s delay, 0.1s intervals)
+  - Direct keyboard input with natural typing experience
+  - Touch-friendly design with 44px+ touch targets for mobile devices
+- **Propofol-Specific Input Ranges**: Optimized for clinical propofol dosing
+  - Bolus Dose: 10-200mg (5mg increments)
+  - Continuous Infusion: 0-500mg/hr (10mg increments for induction, 5mg for dosing)
+  - Patient Height: 50-200cm (expanded range)
+- **Real-time BMI Calculation**: Automatic updates during patient data entry with live calculation
+- **Enhanced Accessibility Features**: Complete accessibility support
+  - High contrast mode support for better visibility
+  - Reduced motion support for users with motion sensitivity
+  - Mobile-responsive design adjustments
+
+### Changed
+- **Patient Information Modal**: Replaced all slider inputs with digital picker components
+  - Age picker: 1-100 years (integer values)
+  - Weight picker: 5-150 kg (1 decimal place)
+  - Height picker: 50-200 cm (integer values)
+- **Induction Panel Controls**: Updated dose input interfaces for propofol-specific ranges
+  - Bolus dose picker: 10-200mg (5mg increments, integer display)
+  - Continuous infusion picker: 0-500mg/hr (10mg increments, integer display)
+- **Dose Event Modal**: Enhanced dose input controls
+  - Administration bolus: 0-200mg (1mg increments, integer display)
+  - Administration continuous: 0-500mg/hr (5mg increments, integer display)
+
+### Fixed
+- **Keyboard Input Issues**: Resolved problem where typing numbers immediately triggered range limits
+- **Event Listener Safety**: Added comprehensive null safety checks to prevent errors with missing DOM elements
+- **Touch Event Handling**: Improved mobile touch responsiveness and prevented default behaviors
+- **BMI Calculation Errors**: Fixed null reference errors in updateBMICalculation method
+- **Patient Modal Functionality**: Resolved issues with patient information edit button not responding
+
+### Technical Improvements
+- **DigitalPicker Class**: 225-line comprehensive input component with floating-point arithmetic correction
+- **Error Handling**: Enhanced try-catch blocks and safety checks throughout the application
+- **Mobile Optimization**: Improved touch targets and responsive design for smartphone usage
+- **Null Safety**: Added extensive null checks for all DOM element interactions
+- **Event Management**: Improved event listener management with proper cleanup and initialization
+
 ## [1.0.0] - 2025-07-13
 
 ### Added

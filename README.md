@@ -1,4 +1,4 @@
-# Propofol TCI TIVA V1.0.0
+# Propofol TCI TIVA V1.1.0
 
 **Effect-site Concentration Target Controlled Infusion Integrated System**
 
@@ -23,12 +23,20 @@ This application is immediately available online without installation. Access th
 2. **Advanced Protocol Optimization** - Optimal bolus and infusion rate calculation with step-down protocols  
 3. **Dose Monitoring** - High-precision concentration calculations from actual dosing records
 
+### 🆕 Enhanced Input Interface (V1.1.0)
+- **Mobile-Optimized Digital Pickers** - Touch-friendly numerical input with +/- buttons
+- **Long-press Support** - Rapid value adjustment for efficient dose entry
+- **Direct Keyboard Input** - Tap number fields for manual entry
+- **Propofol-Specific Ranges** - Optimized for clinical propofol dosing (mg/hr)
+- **Real-time BMI Calculation** - Automatic updates during patient data entry
+
 ### Technical Specifications
 - **Model**: Eleveld et al. (2018) propofol PK-PD model with BIS integration
 - **Algorithm**: Variable-step Hybrid Algorithm for Ce (VHAC) with analytical solutions
 - **Integration**: 4th-order Runge-Kutta and LSODA numerical methods
 - **Platform**: Progressive Web App compatible with modern browsers
 - **Precision**: 0.01-minute resolution (0.6-second accuracy)
+- **🆕 Mobile UI**: Optimized for smartphones and tablets with 44px+ touch targets
 
 ## Installation
 
@@ -203,6 +211,26 @@ Affiliations:
 ## Publication Status
 
 Manuscript describing the mathematical validation and clinical applications of this system is currently under review for publication in a peer-reviewed journal.
+
+## Version History
+
+### V1.1.0 (January 2025)
+- **🆕 Mobile-Optimized Input Interface**: Enhanced digital picker components with touch-friendly controls
+- **Long-press Support**: Rapid value adjustment for efficient dose entry (0.5s delay, 0.1s intervals)
+- **Direct Keyboard Input**: Natural typing experience with range validation on focus loss
+- **Propofol-Specific Ranges**: Optimized dosing ranges for clinical propofol use
+  - Bolus Dose: 10-200mg (5mg increments)
+  - Continuous Infusion: 0-500mg/hr (10mg increments for induction, 5mg for dosing)
+- **Real-time BMI Calculation**: Automatic updates during patient data entry
+- **Enhanced Error Handling**: Improved null safety and event listener management
+- **Mobile Accessibility**: 44px+ touch targets, high contrast, reduced motion support
+
+### V1.0.0 (July 2024)
+- Initial release with Eleveld pharmacokinetic model
+- Real-time induction prediction engine
+- Advanced protocol optimization
+- Dose monitoring and CSV export
+- Progressive Web App functionality
 
 ## Acknowledgments
 

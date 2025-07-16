@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propofol TCI TIVA - Effect-site Concentration Target Controlled Infusion Integrated System</title>
+    <title>Propofol TCI TIVA V1.1.0 - Effect-site Concentration Target Controlled Infusion Integrated System</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2196F3">
@@ -28,7 +28,7 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Propofol TCI TIVA</h2>
+            <h2>Propofol TCI TIVA V1.1.0</h2>
             <p>Initializing system...</p>
         </div>
     </div>
@@ -70,7 +70,7 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">
-                <h1>Propofol TCI TIVA</h1>
+                <h1>Propofol TCI TIVA V1.1.0</h1>
                 <p>Effect-site Concentration Target Controlled Infusion Integrated System - Propofol Pharmacokinetic-Pharmacodynamic Model</p>
             </div>
         </header>
@@ -137,15 +137,19 @@
                 </div>
                 <div class="panel-content">
                     <div class="induction-controls">
-                        <div class="dose-input">
-                            <label for="inductionBolus">Bolus Dose (mg):</label>
-                            <input type="range" id="inductionBolus" min="10" max="200" step="5" value="140">
-                            <span id="inductionBolusValue">140</span>
+                        <div class="dose-input digital-picker-enabled">
+                            <!-- Induction Bolus Digital Picker - 導入ボーラスデジタルピッカー -->
+                            <div class="digital-picker-container">
+                                <label for="inductionBolusPicker">Bolus Dose (mg):</label>
+                                <div id="inductionBolusPicker"></div>
+                            </div>
                         </div>
-                        <div class="dose-input">
-                            <label for="inductionContinuous">Continuous Infusion Rate (mg/hr):</label>
-                            <input type="range" id="inductionContinuous" min="0" max="500" step="10" value="200">
-                            <span id="inductionContinuousValue">200</span>
+                        <div class="dose-input digital-picker-enabled">
+                            <!-- Induction Continuous Digital Picker - 導入持続注入デジタルピッカー -->
+                            <div class="digital-picker-container">
+                                <label for="inductionContinuousPicker">Continuous Infusion Rate (mg/hr):</label>
+                                <div id="inductionContinuousPicker"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -330,23 +334,29 @@
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="editAge">Age (years):</label>
-                        <input type="range" id="editAge" min="1" max="100" value="35">
-                        <span id="ageValue" class="slider-value">35</span>
+                    <div class="form-group digital-picker-enabled">
+                        <!-- Age Digital Picker - 年齢デジタルピッカー -->
+                        <div class="digital-picker-container">
+                            <label for="editAgePicker">Age (years):</label>
+                            <div id="editAgePicker"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="editWeight">Weight (kg):</label>
-                        <input type="range" id="editWeight" min="5" max="150" step="0.1" value="70">
-                        <span id="weightValue" class="slider-value">70.0</span>
+                    <div class="form-group digital-picker-enabled">
+                        <!-- Weight Digital Picker - 体重デジタルピッカー -->
+                        <div class="digital-picker-container">
+                            <label for="editWeightPicker">Weight (kg):</label>
+                            <div id="editWeightPicker"></div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="editHeight">Height (cm):</label>
-                        <input type="range" id="editHeight" min="50" max="200" value="170">
-                        <span id="heightValue" class="slider-value">170</span>
+                    <div class="form-group digital-picker-enabled">
+                        <!-- Height Digital Picker - 身長デジタルピッカー -->
+                        <div class="digital-picker-container">
+                            <label for="editHeightPicker">Height (cm):</label>
+                            <div id="editHeightPicker"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>BMI:</label>
@@ -406,15 +416,19 @@
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="doseBolusAmount">Bolus Dose (mg):</label>
-                        <input type="range" id="doseBolusAmount" min="0" max="200" step="1" value="0">
-                        <span id="doseBolusValue" class="slider-value">0.0</span>
+                    <div class="form-group digital-picker-enabled">
+                        <!-- Dose Bolus Digital Picker - 投与ボーラスデジタルピッカー -->
+                        <div class="digital-picker-container">
+                            <label for="doseBolusPicker">Bolus Dose (mg):</label>
+                            <div id="doseBolusPicker"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="doseContinuousRate">Continuous Infusion Rate (mg/hr):</label>
-                        <input type="range" id="doseContinuousRate" min="0" max="500" step="5" value="0">
-                        <span id="doseContinuousValue" class="slider-value">0</span>
+                    <div class="form-group digital-picker-enabled">
+                        <!-- Dose Continuous Digital Picker - 投与持続注入デジタルピッカー -->
+                        <div class="digital-picker-container">
+                            <label for="doseContinuousPicker">Continuous Infusion Rate (mg/hr):</label>
+                            <div id="doseContinuousPicker"></div>
+                        </div>
                     </div>
                 </div>
             </form>

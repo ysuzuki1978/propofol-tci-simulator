@@ -875,3 +875,177 @@ body {
         animation: none;
     }
 }
+
+/* ==============================================
+   DIGITAL PICKER STYLES - Mobile Optimized
+   ============================================== */
+
+/* デジタルピッカーコンテナ */
+.digital-picker-container {
+    margin-bottom: var(--spacing-md);
+}
+
+.digital-picker-container label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+}
+
+/* デジタルピッカー本体 */
+.digital-picker {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--bg-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.digital-picker:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+}
+
+/* +/-ボタン */
+.picker-btn {
+    background-color: #f8f9fa;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    position: relative;
+}
+
+.picker-btn:hover:not(:disabled) {
+    background-color: #e9ecef;
+    color: var(--primary-color);
+}
+
+.picker-btn:active:not(:disabled) {
+    background-color: #d1d5db;
+    transform: scale(0.95);
+}
+
+.picker-btn:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    opacity: 0.6;
+}
+
+/* 長押し中の視覚的フィードバック */
+.picker-btn.pressing {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    transform: scale(0.95);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 数値入力フィールド */
+.picker-input {
+    width: 100%;
+    height: 50px;
+    border: none;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    box-sizing: border-box;
+    padding: 0 var(--spacing-sm);
+    background: var(--bg-primary);
+    transition: background-color 0.2s ease;
+}
+
+.picker-input:focus {
+    outline: none;
+    background-color: #f8fbff;
+}
+
+/* WebKit系ブラウザでのスピナー非表示 */
+.picker-input::-webkit-outer-spin-button,
+.picker-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox系ブラウザでのスピナー非表示 */
+.picker-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* モバイル対応 - より大きなタップ領域 */
+@media (max-width: 768px) {
+    .picker-btn {
+        width: 56px;
+        height: 56px;
+        font-size: 1.6rem;
+    }
+    
+    .picker-input {
+        height: 56px;
+        font-size: 1.3rem;
+    }
+    
+    .digital-picker {
+        border-width: 3px;
+    }
+}
+
+/* 既存のスライダー非表示クラス（統合時に使用） */
+.slider-input-hidden {
+    display: none !important;
+}
+
+/* デジタルピッカー有効時のフォームグループ調整 */
+.form-group.digital-picker-enabled .dose-input,
+.form-group.digital-picker-enabled .input-group {
+    margin-bottom: 0;
+}
+
+.form-group.digital-picker-enabled .dose-input label,
+.form-group.digital-picker-enabled .input-group label {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* アクセシビリティ: 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+    .digital-picker {
+        border-width: 3px;
+        border-color: #000;
+    }
+    
+    .picker-btn {
+        border: 2px solid #000;
+    }
+    
+    .picker-input {
+        border-left: 2px solid #000;
+        border-right: 2px solid #000;
+    }
+}
+
+/* アニメーション軽減設定に対応 */
+@media (prefers-reduced-motion: reduce) {
+    .picker-btn,
+    .picker-input,
+    .digital-picker {
+        transition: none !important;
+    }
+    
+    .picker-btn:active {
+        transform: none;
+    }
+}
