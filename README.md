@@ -1,4 +1,4 @@
-# Propofol TCI TIVA V1.1.0
+# Propofol TCI TIVA V1.1.1
 
 **Effect-site Concentration Target Controlled Infusion Integrated System**
 
@@ -23,11 +23,12 @@ This application is immediately available online without installation. Access th
 2. **Advanced Protocol Optimization** - Optimal bolus and infusion rate calculation with step-down protocols  
 3. **Dose Monitoring** - High-precision concentration calculations from actual dosing records
 
-### 🆕 Enhanced Input Interface (V1.1.0)
-- **Mobile-Optimized Digital Pickers** - Touch-friendly numerical input with +/- buttons
-- **Long-press Support** - Rapid value adjustment for efficient dose entry
-- **Direct Keyboard Input** - Tap number fields for manual entry
-- **Propofol-Specific Ranges** - Optimized for clinical propofol dosing (mg/hr)
+### 🆕 Enhanced ±Button Controls (V1.1.1)
+- **Mobile-Optimized ±Button Interface** - Replaced range sliders with precise ±button controls
+- **Progressive Acceleration** - Long-press functionality with 500ms delay and accelerating intervals
+- **iOS Safari Optimization** - Enhanced modal interaction with proper touch event handling
+- **Mobile Touch Targets** - 44px/50px accessibility-compliant touch targets
+- **Unified Event Delegation** - Scalable event handling system for optimal performance
 - **Real-time BMI Calculation** - Automatic updates during patient data entry
 
 ### Technical Specifications
@@ -213,6 +214,15 @@ Affiliations:
 Manuscript describing the mathematical validation and clinical applications of this system is currently under review for publication in a peer-reviewed journal.
 
 ## Version History
+
+### V1.1.1 (January 2025)
+- **🆕 Enhanced ±Button Controls**: Replaced range sliders with precise ±button controls for all numerical inputs
+- **Progressive Acceleration**: Long-press functionality with 500ms delay and accelerating intervals (200ms→50ms)
+- **iOS Safari Optimization**: Enhanced modal interaction with proper touch event handling to fix iOS Safari issues
+- **Mobile Touch Targets**: 44px/50px accessibility-compliant touch targets for improved mobile experience
+- **Unified Event Delegation**: Scalable event handling system for optimal performance across all input controls
+- **Visual Feedback**: Pulse animation for long-press operations and improved hover states
+- **Cross-browser Compatibility**: Ensured consistent behavior across PC Chrome, iPhone Chrome, and Safari
 
 ### V1.1.0 (January 2025)
 - **🆕 Mobile-Optimized Input Interface**: Enhanced digital picker components with touch-friendly controls
