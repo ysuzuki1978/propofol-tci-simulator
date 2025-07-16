@@ -85,10 +85,19 @@ class MainApplicationController {
     }
 
     setupEventListeners() {
-        // Disclaimer modal
-        document.getElementById('acceptDisclaimer').addEventListener('click', () => {
+        // Disclaimer modal - add multiple event types for iOS compatibility
+        const acceptBtn = document.getElementById('acceptDisclaimer');
+        acceptBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             this.hideDisclaimer();
         });
+        
+        acceptBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.hideDisclaimer();
+        }, { passive: false });
         
         // Patient information
         document.getElementById('editPatientBtn').addEventListener('click', () => {
@@ -163,13 +172,21 @@ class MainApplicationController {
         // Setup adjust buttons
         this.setupAdjustButtons();
         
-        // Modal backdrop clicks
+        // Modal backdrop clicks - improved iOS support
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     modal.classList.remove('active');
                 }
             });
+            
+            // Add touch support for iOS
+            modal.addEventListener('touchend', (e) => {
+                if (e.target === modal) {
+                    e.preventDefault();
+                    modal.classList.remove('active');
+                }
+            }, { passive: false });
         });
     }
 
@@ -240,7 +257,7 @@ class MainApplicationController {
             this.stopHold();
         });
         
-        // Touch events for mobile
+        // Touch events for mobile - only for adjust buttons
         document.addEventListener('touchstart', (e) => {
             if (e.target.classList.contains('btn-adjust')) {
                 e.preventDefault();
@@ -249,7 +266,11 @@ class MainApplicationController {
         }, { passive: false });
         
         document.addEventListener('touchend', (e) => {
-            e.preventDefault();
+            // Only prevent default for adjust buttons
+            if (e.target.classList.contains('btn-adjust') || 
+                document.querySelector('.btn-adjust.holding')) {
+                e.preventDefault();
+            }
             this.stopHold();
         }, { passive: false });
         

@@ -492,6 +492,10 @@ body {
     align-items: center;
     gap: var(--spacing-xs);
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .btn:disabled {
