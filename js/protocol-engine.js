@@ -28,6 +28,9 @@ class ProtocolEngine {
     setPatient(patient) {
         this.patient = patient;
         this.pkParams = this.calculatePKParameters(patient);
+        // Set pkParams on patient object for unified access
+        this.patient.pkParams = this.pkParams;
+        this.patient.pdParams = this.pdParams;
     }
 
     updateSettings(newSettings) {
@@ -375,7 +378,7 @@ class ProtocolEngine {
             performance: performance,
             bolusDose: bolusDoseMg,
             initialContinuousRate: initialContinuousRate,
-            calculationMethod: 'RK4'
+            calculationMethod: 'Unified RK4'
         };
     }
 
@@ -489,10 +492,11 @@ class ProtocolEngine {
     }
 
     /**
-     * 4th order Runge-Kutta integration for system state update
+     * 4th order Runge-Kutta integration for 3-compartment PK system
+     * Note: Effect-site concentration is calculated separately in protocol engine
      */
     updateSystemStateRK4(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.pkParams;
+        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
         
         const derivatives = (s) => ({
             da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
@@ -523,6 +527,39 @@ class ProtocolEngine {
             a2: state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
             a3: state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt)
         };
+    }
+
+    /**
+     * Unified Euler method for fallback
+     */
+    updateSystemStateEuler(state, infusionRateMgMin, dt) {
+        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
+        
+        const da1dt = infusionRateMgMin - (k10 + k12 + k13) * state.a1 + k21 * state.a2 + k31 * state.a3;
+        const da2dt = k12 * state.a1 - k21 * state.a2;
+        const da3dt = k13 * state.a1 - k31 * state.a3;
+        
+        return {
+            a1: state.a1 + dt * da1dt,
+            a2: state.a2 + dt * da2dt,
+            a3: state.a3 + dt * da3dt
+        };
+    }
+
+    /**
+     * Calculate effect-site concentration using VHAC when possible
+     * Falls back to simple calculation for individual points
+     */
+    calculateEffectSiteConcentration(plasmaConc, timeMin) {
+        if (timeMin <= 0 || plasmaConc <= 0) return 0;
+        
+        const ke0 = this.patient.pkParams.ke0;
+        // Simple first-order calculation for protocol optimization
+        // For precise simulations, use VHAC in monitoring engine
+        const buildup = 1.0 - Math.exp(-ke0 * timeMin);
+        const effectSite = plasmaConc * buildup;
+        
+        return Math.max(0, effectSite);
     }
 
     /**

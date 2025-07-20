@@ -789,7 +789,7 @@ class MainApplicationController {
         document.getElementById('maxPlasmaConc').textContent = result.maxPlasmaConcentration.toFixed(3);
         document.getElementById('maxEffectConc').textContent = result.maxEffectSiteConcentration.toFixed(3);
         document.getElementById('minBISValue').textContent = result.minBISValue ? result.minBISValue.toFixed(1) : '---';
-        document.getElementById('calculationMethod').textContent = result.calculationMethod;
+        // Calculation method unified to RK4 - no longer displayed
         
         // Update monitoring chart
         this.updateMonitoringChart(result);

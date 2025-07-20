@@ -1,8 +1,8 @@
 {
-  "name": "Propofol TCI TIVA V1.0.0",
+  "name": "Propofol TCI TIVA V1.2.1",
   "short_name": "PropoTCI",
-  "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Real-time BIS Monitoring - Eleveld PK/PD Model",
-  "version": "1.0.0",
+  "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Enhanced RK4 Integration - Eleveld PK/PD Model",
+  "version": "1.2.1",
   "scope": "/",
   "start_url": "./index.html",
   "display": "fullscreen",

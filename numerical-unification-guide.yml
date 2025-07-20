@@ -1,0 +1,223 @@
+# TCI TIVA Application Numerical Unification Guide
+# ========================================================
+# Instructions for standardizing calculation methods across multiple engine systems
+# Use this guide to apply RK4 unification to similar propofol or other anesthetic applications
+
+version: "1.0.0"
+title: "Numerical Method Unification for Multi-Engine TCI Systems"
+target_applications:
+  - "Propofol TCI TIVA Applications"
+  - "Multi-anesthetic TCI Systems"
+  - "Pharmacokinetic Simulation Applications"
+
+# Phase 1: Analysis and Problem Identification
+problem_analysis:
+  title: "Identify Numerical Inconsistencies"
+  steps:
+    - step: "comparative_testing"
+      description: "Run identical conditions across all calculation engines"
+      actions:
+        - "Create test patient with consistent parameters"
+        - "Apply identical dose events (bolus + continuous infusion)"
+        - "Compare results at key timepoints (e.g., 2 minutes)"
+        - "Document discrepancies between engines"
+    
+    - step: "root_cause_identification"
+      description: "Identify the source of calculation differences"
+      common_issues:
+        - "Bolus processing methods (delta function vs initial condition)"
+        - "Time synchronization inconsistencies"
+        - "Different numerical integration methods"
+        - "Effect-site concentration calculation variations"
+        - "Parameter reference errors"
+
+# Phase 2: Bolus Processing Unification
+bolus_unification:
+  title: "Standardize Bolus Dose Processing"
+  current_problems:
+    - "Delta function approximation: bolusDose / 0.001"
+    - "PKPDIntegrationAdapter.simulate() cumulative approach"
+    - "Incremental calculation inconsistencies"
+  
+  solution:
+    approach: "Initial Condition Setting"
+    implementation:
+      - step: "modify_monitoring_engine"
+        file: "monitoring-engine.js"
+        changes:
+          - "Replace PKPDIntegrationAdapter.simulate() with incremental calculation"
+          - "Set bolus as initial condition: state.a1 = bolusMg"
+          - "Use consistent timeStep (0.01 minutes)"
+          - "Apply same approach as Real-time and Advanced engines"
+      
+      - step: "modify_advanced_engine"
+        file: "enhanced-protocol-engine.js" 
+        changes:
+          - "Replace PKPDIntegrationAdapter.simulate() with incremental approach"
+          - "Use calculateBolusInitialConcentration() for initial state"
+          - "Apply consistent time stepping and state updates"
+
+# Phase 3: Numerical Method Standardization  
+numerical_standardization:
+  title: "Implement Unified RK4 Integration"
+  target_method: "Fourth-order Runge-Kutta (RK4)"
+  
+  steps:
+    - step: "add_missing_methods"
+      description: "Ensure all engines have required numerical methods"
+      required_methods:
+        - "updateSystemStateRK4(state, infusionRate, dt)"
+        - "updateSystemStateEuler(state, infusionRate, dt)"
+      implementation: |
+        updateSystemStateRK4(state, infusionRateMgMin, dt) {
+          const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
+          
+          const derivatives = (s) => ({
+            da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
+            da2dt: k12 * s.a1 - k21 * s.a2,
+            da3dt: k13 * s.a1 - k31 * s.a3
+          });
+          
+          const k1 = derivatives(state);
+          const k2 = derivatives({
+            a1: state.a1 + 0.5 * dt * k1.da1dt,
+            a2: state.a2 + 0.5 * dt * k1.da2dt,
+            a3: state.a3 + 0.5 * dt * k1.da3dt
+          });
+          const k3 = derivatives({
+            a1: state.a1 + 0.5 * dt * k2.da1dt,
+            a2: state.a2 + 0.5 * dt * k2.da2dt,
+            a3: state.a3 + 0.5 * dt * k2.da3dt
+          });
+          const k4 = derivatives({
+            a1: state.a1 + dt * k3.da1dt,
+            a2: state.a2 + dt * k3.da2dt,
+            a3: state.a3 + dt * k3.da3dt
+          });
+          
+          return {
+            a1: state.a1 + (dt / 6.0) * (k1.da1dt + 2*k2.da1dt + 2*k3.da1dt + k4.da1dt),
+            a2: state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
+            a3: state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt)
+          };
+        }
+    
+    - step: "fix_parameter_references"
+      description: "Ensure consistent PK parameter access"
+      common_error: "this.pkParams vs this.patient.pkParams"
+      solution: "Use this.patient.pkParams consistently across all methods"
+
+# Phase 4: Time Synchronization
+time_sync_fixes:
+  title: "Standardize Time Management"
+  
+  real_time_systems:
+    problem: "Using actual elapsed time instead of simulation time"
+    file: "induction-engine.js"
+    fix:
+      before: "this.elapsedTime = (new Date() - this.startTime) / 1000;"
+      after: "this.elapsedTime += 0.6; // 600ms timer interval"
+    explanation: "Use fixed simulation time increment matching timer interval"
+
+# Phase 5: Effect-Site Calculation Unification
+effect_site_unification:
+  title: "Standardize Effect-Site Concentration Calculation"
+  
+  approach: "Standard First-Order Kinetics"
+  implementation:
+    - "Use consistent ke0 calculation across all engines"
+    - "Apply standard effect-site differential equation: dCe/dt = ke0 * (Cp - Ce)"
+    - "For step input (bolus): Ce = Cp * (1 - exp(-ke0 * t))"
+  
+  example_code: |
+    getEffectSiteConcentration() {
+      const timeMin = this.elapsedTime / 60.0;
+      const plasmaConc = this.getPlasmaConcentration();
+      
+      if (timeMin <= 0 || plasmaConc <= 0) return 0;
+      
+      const ke0 = this.patient.pkParams.ke0;
+      const buildup = 1.0 - Math.exp(-ke0 * timeMin);
+      const effectSite = plasmaConc * buildup;
+      
+      return Math.max(0, effectSite);
+    }
+
+# Phase 6: UI Simplification
+ui_simplification:
+  title: "Remove Unnecessary Method Selection"
+  
+  elements_to_remove:
+    - "Calculation Method dropdown selections"
+    - "Export All Methods CSV functionality"
+    - "Dual method comparison displays"
+  
+  rationale: "Focus on unified RK4 method for consistency and reliability"
+
+# Phase 7: Validation and Testing
+validation:
+  title: "Comprehensive Testing Protocol"
+  
+  test_conditions:
+    patient: "Standard test patient (e.g., 50yr, 70kg, 170cm, Male, ASA I-II)"
+    dose: "Standard dose protocol (e.g., 7mg bolus + 1.0mg/kg/hr continuous)"
+    timepoints: "Key evaluation times (e.g., 2 minutes, 5 minutes, 10 minutes)"
+  
+  success_criteria:
+    - "All engines produce identical plasma concentrations (within 0.1%)"
+    - "All engines produce identical effect-site concentrations (within 0.1%)"
+    - "No calculation errors or undefined reference issues"
+    - "UI functions correctly without method selection options"
+
+# Phase 8: Documentation Updates
+documentation:
+  title: "Update Project Documentation"
+  
+  files_to_update:
+    - file: "CHANGELOG.md"
+      content: "Add new version with unification details"
+    - file: "README.md" 
+      content: "Update version number and technical specifications"
+    - file: "package.json"
+      content: "Update version number"
+
+# Application-Specific Adaptations for Propofol
+propofol_adaptations:
+  title: "Propofol-Specific Considerations"
+  
+  model_differences:
+    - "Replace Masui model with Schnider/Marsh propofol models"
+    - "Adjust PK parameters (V1, V2, V3, CL, Q2, Q3)"
+    - "Update ke0 calculation for propofol pharmacodynamics"
+  
+  concentration_ranges:
+    - "Adjust target concentration ranges for propofol"
+    - "Update safety thresholds and alerts"
+    - "Modify step-down protocol parameters"
+
+# Error Prevention
+common_pitfalls:
+  - pitfall: "Parameter reference errors"
+    prevention: "Always use this.patient.pkParams, not this.pkParams"
+  
+  - pitfall: "Time unit inconsistencies"
+    prevention: "Maintain consistent time units (minutes for PK, seconds for UI)"
+  
+  - pitfall: "Incomplete method implementation"
+    prevention: "Ensure all engines have both RK4 and Euler methods"
+  
+  - pitfall: "UI cleanup oversight"
+    prevention: "Remove all references to removed calculation methods"
+
+# Success Validation
+success_metrics:
+  numerical_consistency: "All engines produce identical results"
+  error_elimination: "No JavaScript errors in console"
+  ui_simplification: "Clean, focused user interface"
+  performance: "Maintained or improved calculation speed"
+
+# Version Control
+version_management:
+  strategy: "Semantic versioning"
+  increment: "Minor version (e.g., 1.2.0 → 1.2.1)"
+  commit_strategy: "Atomic commits for each major change"

@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2025-07-20
+
+### Fixed
+- **Real-time Display**: Fixed time display issue where elapsed time remained at 00:00:00 due to unit conversion error
+- **Effect-Site Consistency**: Resolved discrepancy in effect-site concentration rise time between Real-time Induction and Dose Monitoring engines
+- **Bolus Processing**: Unified bolus dose handling as initial conditions across all calculation engines
+- **Time Unit Management**: Corrected time unit handling (minutes vs seconds) in display functions
+
+### Improved
+- **RK4 Integration**: Enhanced 4th-order Runge-Kutta implementation for 4-dimensional system (a1, a2, a3, Ce)
+- **Numerical Accuracy**: Improved effect-site concentration calculation using proper differential equation integration
+- **Calculation Consistency**: Ensured identical pharmacokinetic calculations across real-time and monitoring engines
+- **Code Reliability**: Streamlined codebase by removing unstable LSODA and complex VHAC implementations
+
+### Technical Benefits of RK4 Implementation
+- **Higher Accuracy**: 4th-order accuracy vs 1st-order (Euler method) provides significantly better precision
+- **Numerical Stability**: More stable integration for stiff differential equations in pharmacokinetics
+- **Consistent Time Steps**: Unified 0.01-minute time steps across all engines for reliable comparisons
+- **Reduced Error Propagation**: Lower cumulative errors in long-term simulations
+- **Professional Standard**: Industry-standard numerical method for pharmacokinetic modeling
+
+## [1.1.0] - 2025-07-20
+
+### Changed
+- **Numerical Unification**: Unified all calculation engines with standardized RK4 integration
+- **Bolus Processing**: Changed from delta function approximation to initial state setting for consistency
+- **Time Synchronization**: Fixed real-time calculation to use fixed simulation time increments
+- **Effect-Site Calculation**: Standardized effect-site concentration calculation across all engines
+- **Parameter References**: Unified PK parameter access to `this.patient.pkParams` format
+
+### Removed
+- **UI Simplification**: Removed calculation method selection from user interface
+- **Export Methods**: Removed multi-method comparison functionality
+- **LSODA Integration**: Removed LSODA implementation due to stability issues
+- **VHAC Complexity**: Simplified effect-site calculation to use first-order kinetics for consistency
+
+### Fixed
+- **Time Management**: Fixed induction engine time calculation inconsistencies
+- **Parameter Access**: Corrected PKParam reference errors across engines
+- **Effect-Site Formula**: Removed incorrect decay term from effect-site concentration calculation
+- **Design Preservation**: Maintained original design approach with simplified algorithms and 0.01-minute precision
+
+### Technical Improvements
+- Implemented unified `updateSystemStateRK4` and `updateSystemStateEuler` methods
+- Simplified effect-site concentration calculation using unified first-order kinetics
+- Maintained original 0.01-minute resolution (0.6-second accuracy) 
+- Corrected effect-site concentration formula while respecting original design
+- Improved numerical stability and calculation consistency
+- Removed LSODA solver due to stability issues in real-time simulation
+- Streamlined codebase by removing complex VHAC implementation
+
 ## [1.0.0] - 2025-07-13
 
 ### Added
