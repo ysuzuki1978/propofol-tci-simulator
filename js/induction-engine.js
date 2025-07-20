@@ -4,7 +4,7 @@
  * 
  * Features:
  * - Real-time plasma and effect-site concentration calculation
- * - LSODA and Euler integration methods
+ * - RK4 and Euler integration methods
  * - Snapshot recording functionality
  * - Continuous and bolus dosing support
  */
@@ -22,9 +22,7 @@ class InductionEngine {
         this.continuousDose = 0;
         this.snapshots = [];
         this.timer = null;
-        this.useLSODA = true;
-        this.lsodaSolver = null;
-        this.integrationStats = null;
+        this.useRK4 = true; // Use RK4 as primary method
         this.updateCallbacks = [];
         this.bisValue = 100.0;  // Initialize BIS value
     }
@@ -64,6 +62,9 @@ class InductionEngine {
 
         this.patient = patient;
         this.pkParams = this.calculatePKParameters(patient);
+        // Set pkParams on patient object for unified access
+        this.patient.pkParams = this.pkParams;
+        this.patient.pdParams = this.pdParams;
         this.bolusDose = bolusDose;
         this.continuousDose = continuousDose;
         this.state = { a1: bolusDose, a2: 0, a3: 0, ce: 0 };
@@ -72,19 +73,13 @@ class InductionEngine {
         this.snapshots = [];
         this.isRunning = true;
 
-        // Initialize LSODA solver if available
-        if (this.useLSODA && typeof LSODA !== 'undefined') {
-            this.lsodaSolver = new LSODA();
-            console.log('Using LSODA integration method');
-        } else {
-            this.useLSODA = false;
-            console.log('Using Euler integration method');
-        }
+        // Use RK4 as primary integration method with Euler fallback
+        console.log('Using RK4 integration method with Euler fallback');
 
         this.timer = setInterval(() => {
             this.updateSimulation();
             this.notifyCallbacks();
-        }, 1000);
+        }, 600);
 
         this.notifyCallbacks();
         return true;
@@ -129,43 +124,36 @@ class InductionEngine {
     updateSimulation() {
         if (!this.isRunning || !this.startTime) return;
 
-        this.elapsedTime = (new Date() - this.startTime) / 1000;
+        this.elapsedTime += 0.01; // Fixed simulation time increment (0.01 min = 0.6s precision)
         
-        if (this.useLSODA && this.lsodaSolver) {
-            this.updateSimulationLSODA();
-        } else {
-            this.updateSimulationEuler();
-        }
+        // Use RK4 for accurate integration
+        this.updateSimulationRK4();
         
         // Calculate BIS value from effect-site concentration
         this.updateBISValue();
     }
 
+    updateSimulationRK4() {
+        try {
+            const dt = 0.01; // 0.01 minute time step
+            const infusionRateMgMin = this.continuousDose / 60.0; // Convert mg/hr to mg/min
+            
+            // Update system state using RK4 (includes effect-site concentration)
+            this.state = this.updateSystemStateRK4(this.state, infusionRateMgMin, dt);
+            
+        } catch (error) {
+            console.warn('RK4 integration failed, falling back to Euler method:', error);
+            this.updateSimulationEuler();
+        }
+    }
+
     updateSimulationEuler() {
-        const dt = 1.0; // 1 second time step
-
-        // Continuous infusion rate (mg/min)
-        const continuousRate = this.continuousDose / 60.0;
-
-        // Rate constants
-        const { k10, k12, k21, k13, k31, ke0 } = this.pkParams;
-
-        // Differential equations
-        const da1_dt = continuousRate - k10 * this.state.a1 - k12 * this.state.a1 + 
-                       k21 * this.state.a2 - k13 * this.state.a1 + k31 * this.state.a3;
-        const da2_dt = k12 * this.state.a1 - k21 * this.state.a2;
-        const da3_dt = k13 * this.state.a1 - k31 * this.state.a3;
-
-        // Update compartments (Euler integration)
-        this.state.a1 += (dt / 60.0) * da1_dt; // Convert dt to minutes
-        this.state.a2 += (dt / 60.0) * da2_dt;
-        this.state.a3 += (dt / 60.0) * da3_dt;
-
-        // Effect site concentration
-        const plasmaConc = this.getPlasmaConcentration();
-        const dce_dt = ke0 * (plasmaConc - this.state.ce);
-        this.state.ce += (dt / 60.0) * dce_dt;
-
+        const dt = 0.01; // Use same 0.01 minute time step as RK4
+        const infusionRateMgMin = this.continuousDose / 60.0;
+        
+        // Update state using unified Euler method
+        this.state = this.updateSystemStateEuler(this.state, infusionRateMgMin, dt);
+        
         // Ensure non-negative values
         this.state.a1 = Math.max(0, this.state.a1);
         this.state.a2 = Math.max(0, this.state.a2);
@@ -173,103 +161,7 @@ class InductionEngine {
         this.state.ce = Math.max(0, this.state.ce);
     }
 
-    updateSimulationLSODA() {
-        const currentTimeMin = this.elapsedTime / 60.0;
-        const nextTimeMin = currentTimeMin + 1.0/60.0; // 1 second step in minutes
-        
-        // Define the ODE system for LSODA
-        const odeSystem = (t, y) => {
-            const [a1, a2, a3, ce] = y;
-            const { k10, k12, k21, k13, k31, ke0, v1 } = this.pkParams;
-            
-            // Continuous infusion rate (mg/min)
-            const continuousRate = this.continuousDose / 60.0;
-            
-            // PK compartment equations
-            const da1_dt = continuousRate - k10 * a1 - k12 * a1 + k21 * a2 - k13 * a1 + k31 * a3;
-            const da2_dt = k12 * a1 - k21 * a2;
-            const da3_dt = k13 * a1 - k31 * a3;
-            
-            // Effect site equation
-            const plasmaConc = a1 / v1;
-            const dce_dt = ke0 * (plasmaConc - ce);
-            
-            return [da1_dt, da2_dt, da3_dt, dce_dt];
-        };
-        
-        try {
-            // Validate initial conditions to prevent numerical instability
-            const y0 = [
-                Math.max(0, this.state.a1 || 0),
-                Math.max(0, this.state.a2 || 0), 
-                Math.max(0, this.state.a3 || 0),
-                Math.max(0, this.state.ce || 0)
-            ];
-            
-            // Check for valid time step
-            const timeStep = nextTimeMin - currentTimeMin;
-            if (timeStep <= 0 || timeStep > 10) {
-                throw new Error(`Invalid time step: ${timeStep}`);
-            }
-            
-            // Solve ODE from current time to next time step
-            const result = this.lsodaSolver.integrate(
-                odeSystem, 
-                y0, 
-                [currentTimeMin, nextTimeMin], 
-                {
-                    rtol: 1e-6,     // Relaxed relative tolerance
-                    atol: 1e-8,     // Relaxed absolute tolerance  
-                    mxstep: 500,    // Increased max steps
-                    hmin: 1e-10,    // Minimum step size
-                    hmax: 0.1       // Maximum step size
-                }
-            );
-            
-            if (result.y.length > 1) {
-                // Update state with the latest solution
-                const finalY = result.y[result.y.length - 1];
-                this.state.a1 = Math.max(0, finalY[0]);
-                this.state.a2 = Math.max(0, finalY[1]);
-                this.state.a3 = Math.max(0, finalY[2]);
-                this.state.ce = Math.max(0, finalY[3]);
-                
-                // Store integration statistics
-                this.integrationStats = result.stats;
-            }
-        } catch (error) {
-            console.warn('LSODA integration failed, falling back to Euler method:', error.message);
-            
-            // Disable LSODA for this session to prevent repeated failures
-            this.useLSODA = false;
-            
-            // Reset to safe state if necessary
-            if (isNaN(this.state.a1) || isNaN(this.state.a2) || isNaN(this.state.a3) || isNaN(this.state.ce)) {
-                console.warn('State contains NaN values, resetting to safe state');
-                this.resetToSafeState();
-            }
-            
-            // Use Euler method as fallback
-            this.updateSimulationEuler();
-        }
-    }
 
-    resetToSafeState() {
-        // Reset to last known safe state or initialize with bolus dose
-        const lastBolus = this.bolusDose || 0;
-        const v1 = this.pkParams ? this.pkParams.v1 : 4.27; // Default V1 for adult
-        
-        this.state = {
-            a1: lastBolus,
-            a2: 0,
-            a3: 0,
-            ce: 0,
-            plasmaConcentration: lastBolus / v1,
-            effectSiteConcentration: 0
-        };
-        
-        console.log('State reset to safe values');
-    }
 
     calculatePKParameters(patient) {
         console.log('Calculating PK parameters for induction with Eleveld model');
@@ -326,24 +218,23 @@ class InductionEngine {
     }
 
     getElapsedTimeString() {
-        const hours = Math.floor(this.elapsedTime / 3600);
-        const minutes = Math.floor((this.elapsedTime % 3600) / 60);
-        const seconds = Math.floor(this.elapsedTime % 60);
+        // elapsedTime is in minutes, convert to seconds for display
+        const totalSeconds = this.elapsedTime * 60;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
     getIntegrationMethod() {
-        if (this.useLSODA && this.integrationStats) {
-            return `LSODA (method: ${this.integrationStats.method})`;
-        }
-        return this.useLSODA ? 'LSODA (initializing)' : 'Euler';
+        return this.useRK4 ? 'RK4 (with Euler fallback)' : 'Euler';
     }
 
     getIntegrationStats() {
-        return this.integrationStats || {
-            nsteps: 0,
-            nfe: 0,
-            method: 'Euler'
+        return {
+            method: this.useRK4 ? 'RK4' : 'Euler',
+            timeStep: 0.01,
+            precision: 'minute'
         };
     }
 
@@ -386,9 +277,82 @@ class InductionEngine {
         this.continuousDose = 0;
         this.snapshots = [];
         this.elapsedTime = 0;
-        this.integrationStats = null;
         this.bisValue = 100.0;
         this.notifyCallbacks();
+    }
+
+    /**
+     * Unified RK4 method as per numerical-unification-guide.yml
+     * Includes 4-compartment system: a1, a2, a3, and effect-site concentration
+     */
+    updateSystemStateRK4(state, infusionRateMgMin, dt) {
+        const { k10, k12, k21, k13, k31, ke0, v1 } = this.patient.pkParams;
+        
+        const derivatives = (s) => {
+            const plasmaConc = s.a1 / v1;
+            return {
+                da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
+                da2dt: k12 * s.a1 - k21 * s.a2,
+                da3dt: k13 * s.a1 - k31 * s.a3,
+                dcedt: ke0 * (plasmaConc - s.ce)
+            };
+        };
+        
+        const k1 = derivatives(state);
+        const k2 = derivatives({
+            a1: state.a1 + 0.5 * dt * k1.da1dt,
+            a2: state.a2 + 0.5 * dt * k1.da2dt,
+            a3: state.a3 + 0.5 * dt * k1.da3dt,
+            ce: state.ce + 0.5 * dt * k1.dcedt
+        });
+        const k3 = derivatives({
+            a1: state.a1 + 0.5 * dt * k2.da1dt,
+            a2: state.a2 + 0.5 * dt * k2.da2dt,
+            a3: state.a3 + 0.5 * dt * k2.da3dt,
+            ce: state.ce + 0.5 * dt * k2.dcedt
+        });
+        const k4 = derivatives({
+            a1: state.a1 + dt * k3.da1dt,
+            a2: state.a2 + dt * k3.da2dt,
+            a3: state.a3 + dt * k3.da3dt,
+            ce: state.ce + dt * k3.dcedt
+        });
+        
+        return {
+            a1: state.a1 + (dt / 6.0) * (k1.da1dt + 2*k2.da1dt + 2*k3.da1dt + k4.da1dt),
+            a2: state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
+            a3: state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt),
+            ce: state.ce + (dt / 6.0) * (k1.dcedt + 2*k2.dcedt + 2*k3.dcedt + k4.dcedt)
+        };
+    }
+
+    /**
+     * Unified Euler method for fallback
+     * Includes 4-compartment system: a1, a2, a3, and effect-site concentration
+     */
+    updateSystemStateEuler(state, infusionRateMgMin, dt) {
+        const { k10, k12, k21, k13, k31, ke0, v1 } = this.patient.pkParams;
+        
+        const plasmaConc = state.a1 / v1;
+        
+        const da1dt = infusionRateMgMin - (k10 + k12 + k13) * state.a1 + k21 * state.a2 + k31 * state.a3;
+        const da2dt = k12 * state.a1 - k21 * state.a2;
+        const da3dt = k13 * state.a1 - k31 * state.a3;
+        const dcedt = ke0 * (plasmaConc - state.ce);
+        
+        return {
+            a1: state.a1 + dt * da1dt,
+            a2: state.a2 + dt * da2dt,
+            a3: state.a3 + dt * da3dt,
+            ce: state.ce + dt * dcedt
+        };
+    }
+
+    /**
+     * Get current effect-site concentration from state (calculated by RK4/Euler integration)
+     */
+    getEffectSiteConcentration() {
+        return Math.max(0, this.state.ce);
     }
 }
 

@@ -6,12 +6,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
-    <title>Propofol TCI TIVA - Effect-site Concentration Target Controlled Infusion Integrated System</title>
+    <title>Propofol TCI TIVA V1.2.1 - Effect-site Concentration Target Controlled Infusion Integrated System</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2196F3">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Propofol TCI TIVA">
+    <meta name="apple-mobile-web-app-title" content="Propofol TCI TIVA V1.2.1">
     
     <!-- Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="images/icon-192.png">
@@ -30,7 +30,7 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Propofol TCI TIVA</h2>
+            <h2>Propofol TCI TIVA V1.2.1</h2>
             <p>Initializing system...</p>
         </div>
     </div>
@@ -72,8 +72,8 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">
-                <h1>Propofol TCI TIVA <span class="version">V1.1.1</span></h1>
-                <p>Effect-site Concentration Target Controlled Infusion Integrated System - Propofol Pharmacokinetic-Pharmacodynamic Model</p>
+                <h1>Propofol TCI TIVA V1.2.1</h1>
+                <p>Effect-site Concentration Target Controlled Infusion Integrated System - Enhanced RK4 Integration</p>
             </div>
         </header>
 
@@ -309,10 +309,6 @@
                                 <span id="minBISValue">---</span>
                                 <span class="unit">(Sedation Level)</span>
                             </div>
-                            <div class="result-item">
-                                <label>Calculation Method:</label>
-                                <span id="calculationMethod">---</span>
-                            </div>
                         </div>
 
                         <div class="monitoring-chart-container">
@@ -322,13 +318,6 @@
                 </div>
             </section>
         </div>
-        
-        <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-content">
-                <p>Propofol TCI TIVA V1.1.1 | Eleveld et al. (2018) PK-PD Model | Educational & Research Use Only</p>
-            </div>
-        </footer>
     </div>
 
     <!-- Patient Edit Modal -->
@@ -457,7 +446,6 @@
 
     <!-- JavaScript Modules -->
     <script src="utils/lsoda.js"></script>
-    <script src="utils/vhac.js"></script>
     <script src="utils/masui-ke0-calculator.js"></script>
     <script src="js/models.js"></script>
     <script src="js/eleveld-pk-pd.js"></script>

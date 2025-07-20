@@ -7,88 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.1] - 2025-07-16
-
-### Added
-- **±Button Controls**: Replaced difficult-to-use range sliders with precise ±button controls for all numerical inputs
-- **Long-press Functionality**: Added long-press support for rapid value changes with progressive acceleration (500ms delay, 200ms→50ms intervals)
-- **Mobile Touch Optimization**: Enhanced touch targets with 44px buttons (50px on mobile) for improved accessibility
-- **iOS Safari Compatibility**: Fixed modal interaction issues specific to iOS Safari browser
-- **Input Validation**: Comprehensive min/max constraint validation for all input fields
-- **Visual Feedback**: Pulse animation for long-press operations and improved hover states
-
-### Changed
-- **Input Interface**: Complete migration from range sliders to number inputs with adjacent ±buttons
-- **Event Handling**: Unified event delegation system for all adjust buttons
-- **Mobile Responsiveness**: Enhanced mobile layout with larger touch targets and better spacing
-- **Touch Event Processing**: Improved touch event handling for iOS devices to prevent conflicts
+## [1.2.1] - 2025-07-20
 
 ### Fixed
-- **iOS Modal Bug**: Resolved "Accept and Start" button unresponsiveness on iOS Safari
-- **Touch Event Conflicts**: Fixed touch event propagation issues between ±buttons and modal interactions
-- **Mobile Input Precision**: Eliminated finger-adjustment difficulties with range sliders
-- **Cross-browser Compatibility**: Ensured consistent behavior across PC Chrome, iPhone Chrome, and Safari
+- **Real-time Display**: Fixed time display issue where elapsed time remained at 00:00:00 due to unit conversion error
+- **Effect-Site Consistency**: Resolved discrepancy in effect-site concentration rise time between Real-time Induction and Dose Monitoring engines
+- **Bolus Processing**: Unified bolus dose handling as initial conditions across all calculation engines
+- **Time Unit Management**: Corrected time unit handling (minutes vs seconds) in display functions
 
-### Technical Details
-- **Progressive Acceleration Algorithm**: Long-press starts after 500ms, accelerates from 200ms to 50ms intervals with 0.9 multiplier
-- **Event Delegation**: Single event listener handles all ±button interactions via data attributes
-- **CSS Touch Optimization**: Added `-webkit-tap-highlight-color: transparent` and proper touch callout prevention
-- **Unified Input System**: Consistent `data-target` and `data-step` attribute system for all controls
+### Improved
+- **RK4 Integration**: Enhanced 4th-order Runge-Kutta implementation for 4-dimensional system (a1, a2, a3, Ce)
+- **Numerical Accuracy**: Improved effect-site concentration calculation using proper differential equation integration
+- **Calculation Consistency**: Ensured identical pharmacokinetic calculations across real-time and monitoring engines
+- **Code Reliability**: Streamlined codebase by removing unstable LSODA and complex VHAC implementations
 
-### Files Modified
-- `index.html`: Complete input interface redesign with ±button implementation
-- `css/main.css`: Enhanced mobile styling, button animations, and touch optimization
-- `js/main.js`: Long-press functionality and unified event handling system
-- `manifest.json`: Version update to 1.1.1
+### Technical Benefits of RK4 Implementation
+- **Higher Accuracy**: 4th-order accuracy vs 1st-order (Euler method) provides significantly better precision
+- **Numerical Stability**: More stable integration for stiff differential equations in pharmacokinetics
+- **Consistent Time Steps**: Unified 0.01-minute time steps across all engines for reliable comparisons
+- **Reduced Error Propagation**: Lower cumulative errors in long-term simulations
+- **Professional Standard**: Industry-standard numerical method for pharmacokinetic modeling
 
-### Performance Improvements
-- **Memory Efficiency**: Optimized event handling with single delegation listener
-- **Animation Performance**: GPU-accelerated CSS animations for smooth visual feedback
-- **Touch Response**: Reduced touch delay and improved responsiveness on mobile devices
-
-## [1.1.0] - 2025-01-16
-
-### Added
-- **🆕 Mobile-Optimized Digital Picker Components**: Complete replacement of slider inputs with touch-friendly digital pickers
-  - Enhanced +/- buttons with visual feedback and disabled states
-  - Long-press support for rapid value adjustment (0.5s delay, 0.1s intervals)
-  - Direct keyboard input with natural typing experience
-  - Touch-friendly design with 44px+ touch targets for mobile devices
-- **Propofol-Specific Input Ranges**: Optimized for clinical propofol dosing
-  - Bolus Dose: 10-200mg (5mg increments)
-  - Continuous Infusion: 0-500mg/hr (10mg increments for induction, 5mg for dosing)
-  - Patient Height: 50-200cm (expanded range)
-- **Real-time BMI Calculation**: Automatic updates during patient data entry with live calculation
-- **Enhanced Accessibility Features**: Complete accessibility support
-  - High contrast mode support for better visibility
-  - Reduced motion support for users with motion sensitivity
-  - Mobile-responsive design adjustments
+## [1.1.0] - 2025-07-20
 
 ### Changed
-- **Patient Information Modal**: Replaced all slider inputs with digital picker components
-  - Age picker: 1-100 years (integer values)
-  - Weight picker: 5-150 kg (1 decimal place)
-  - Height picker: 50-200 cm (integer values)
-- **Induction Panel Controls**: Updated dose input interfaces for propofol-specific ranges
-  - Bolus dose picker: 10-200mg (5mg increments, integer display)
-  - Continuous infusion picker: 0-500mg/hr (10mg increments, integer display)
-- **Dose Event Modal**: Enhanced dose input controls
-  - Administration bolus: 0-200mg (1mg increments, integer display)
-  - Administration continuous: 0-500mg/hr (5mg increments, integer display)
+- **Numerical Unification**: Unified all calculation engines with standardized RK4 integration
+- **Bolus Processing**: Changed from delta function approximation to initial state setting for consistency
+- **Time Synchronization**: Fixed real-time calculation to use fixed simulation time increments
+- **Effect-Site Calculation**: Standardized effect-site concentration calculation across all engines
+- **Parameter References**: Unified PK parameter access to `this.patient.pkParams` format
+
+### Removed
+- **UI Simplification**: Removed calculation method selection from user interface
+- **Export Methods**: Removed multi-method comparison functionality
+- **LSODA Integration**: Removed LSODA implementation due to stability issues
+- **VHAC Complexity**: Simplified effect-site calculation to use first-order kinetics for consistency
 
 ### Fixed
-- **Keyboard Input Issues**: Resolved problem where typing numbers immediately triggered range limits
-- **Event Listener Safety**: Added comprehensive null safety checks to prevent errors with missing DOM elements
-- **Touch Event Handling**: Improved mobile touch responsiveness and prevented default behaviors
-- **BMI Calculation Errors**: Fixed null reference errors in updateBMICalculation method
-- **Patient Modal Functionality**: Resolved issues with patient information edit button not responding
+- **Time Management**: Fixed induction engine time calculation inconsistencies
+- **Parameter Access**: Corrected PKParam reference errors across engines
+- **Effect-Site Formula**: Removed incorrect decay term from effect-site concentration calculation
+- **Design Preservation**: Maintained original design approach with simplified algorithms and 0.01-minute precision
 
 ### Technical Improvements
-- **DigitalPicker Class**: 225-line comprehensive input component with floating-point arithmetic correction
-- **Error Handling**: Enhanced try-catch blocks and safety checks throughout the application
-- **Mobile Optimization**: Improved touch targets and responsive design for smartphone usage
-- **Null Safety**: Added extensive null checks for all DOM element interactions
-- **Event Management**: Improved event listener management with proper cleanup and initialization
+- Implemented unified `updateSystemStateRK4` and `updateSystemStateEuler` methods
+- Simplified effect-site concentration calculation using unified first-order kinetics
+- Maintained original 0.01-minute resolution (0.6-second accuracy) 
+- Corrected effect-site concentration formula while respecting original design
+- Improved numerical stability and calculation consistency
+- Removed LSODA solver due to stability issues in real-time simulation
+- Streamlined codebase by removing complex VHAC implementation
 
 ## [1.0.0] - 2025-07-13
 

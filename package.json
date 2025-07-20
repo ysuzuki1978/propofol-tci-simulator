@@ -1,6 +1,6 @@
 {
   "name": "propofol-tci-simulator",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Real-time BIS Monitoring - Eleveld PK/PD Model",
   "main": "index.html",
   "scripts": {
