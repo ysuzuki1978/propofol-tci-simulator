@@ -632,22 +632,28 @@ class MainApplicationController {
         if (this.protocolChart) this.protocolChart.destroy();
 
         const chartData = this.advancedProtocolEngine.getChartData();
-        if (!chartData) return;
+        if (!chartData || !chartData.times) return;
+
+        // Convert times to clock-time labels
+        const labels = chartData.times.map(t => {
+            const ct = this.appState.patient.minutesToClockTime(t);
+            return ct.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+        });
 
         this.protocolChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: chartData.labels,
+                labels: labels,
                 datasets: [
                     {
                         label: 'Cp',
-                        data: chartData.plasmaData,
+                        data: chartData.plasmaConcentrations,
                         borderColor: '#2196F3',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
                         label: 'Ce',
-                        data: chartData.effectData,
+                        data: chartData.effectSiteConcentrations,
                         borderColor: '#4CAF50',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 2
                     },
@@ -659,7 +665,7 @@ class MainApplicationController {
                     },
                     {
                         label: 'Rate',
-                        data: chartData.rateData,
+                        data: chartData.infusionRates,
                         borderColor: '#7b1fa2',
                         tension: 0.1, pointRadius: 0, borderWidth: 1.5, fill: false,
                         yAxisID: 'y1'
@@ -700,7 +706,7 @@ class MainApplicationController {
         const table = document.createElement('table');
         table.innerHTML = `
             <thead><tr>
-                <th>Time</th><th>Action</th><th>Rate (mg/hr)</th><th>Ce</th>
+                <th>Time</th><th>Action</th><th>Rate</th><th>Comment</th>
             </tr></thead>
             <tbody></tbody>
         `;
@@ -709,12 +715,14 @@ class MainApplicationController {
 
         schedule.forEach(item => {
             const row = document.createElement('tr');
-            row.className = item.type === 'predictive_adjustment' ? 'predictive' : (item.type === 'reactive_adjustment' ? 'reactive' : '');
+            if (item.type === 'step_down') row.className = 'reactive';
+            else if (item.type === 'start_continuous') row.className = 'predictive';
+            const timeStr = item.time !== '' && item.time !== undefined ? `${item.time} min` : '';
             row.innerHTML = `
-                <td>${item.time !== undefined ? item.time.toFixed(1) : '---'} min</td>
-                <td>${item.action || item.type || '---'}</td>
-                <td>${item.rate !== undefined ? item.rate.toFixed(2) : '---'}</td>
-                <td>${item.ce !== undefined ? item.ce.toFixed(3) : '---'}</td>
+                <td>${timeStr}</td>
+                <td>${item.action || '---'}</td>
+                <td>${item.rate || '---'}</td>
+                <td>${item.comment || ''}</td>
             `;
             tbody.appendChild(row);
         });
@@ -748,16 +756,21 @@ class MainApplicationController {
         // Only auto-load if monitoring has no events yet
         const events = this.monitoringEngine.getDoseEvents();
         if (events.length === 0) {
-            // Add bolus at time 0
+            // Add bolus at time 0 with initial continuous rate
             const bolusEvent = new DoseEvent(0, bolus, rate);
             this.monitoringEngine.addDoseEvent(bolusEvent);
 
-            // Add dosage adjustments from schedule
+            // Add step-down adjustments from schedule
             if (result.schedule) {
                 result.schedule.forEach(item => {
-                    if (item.type && item.type.includes('adjustment') && item.time > 0) {
-                        const adjEvent = new DoseEvent(Math.round(item.time), 0, item.rate);
-                        this.monitoringEngine.addDoseEvent(adjEvent);
+                    if (item.type === 'step_down' && item.time > 0) {
+                        // Extract numeric rate from string like "123.45 mg/hr"
+                        const rateStr = item.rate || '';
+                        const numericRate = parseFloat(rateStr);
+                        if (!isNaN(numericRate)) {
+                            const adjEvent = new DoseEvent(Math.round(item.time), 0, numericRate);
+                            this.monitoringEngine.addDoseEvent(adjEvent);
+                        }
                     }
                 });
             }
