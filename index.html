@@ -2,26 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>Propofol TCI TIVA V1.2.1 - Effect-site Concentration Target Controlled Infusion Integrated System</title>
-    
+    <title>Propofol TCI TIVA V2.0.0</title>
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#2196F3">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Propofol TCI TIVA V1.2.1">
-    
+    <meta name="apple-mobile-web-app-title" content="PropoTCI">
+
     <!-- Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="images/icon-192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png">
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
 </head>
@@ -30,8 +30,8 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Propofol TCI TIVA V1.2.1</h2>
-            <p>Initializing system...</p>
+            <h2>Propofol TCI TIVA</h2>
+            <p>Initializing...</p>
         </div>
     </div>
 
@@ -39,29 +39,23 @@
     <div id="disclaimerModal" class="modal active">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚠️ Disclaimer</h2>
+                <h2>Important Notice</h2>
             </div>
             <div class="modal-body">
                 <div class="disclaimer-content">
-                    <h3>Important Notice</h3>
                     <ul>
                         <li>This application is <strong>for educational and research purposes only</strong></li>
                         <li>Do not use as a basis for clinical diagnosis or treatment</li>
-                        <li>All clinical decisions must be made by qualified healthcare professionals</li>
-                        <li>Calculation results are theoretical values and do not guarantee actual patient responses</li>
-                        <li>The developer assumes no responsibility for any consequences of using this application</li>
+                        <li>All clinical decisions must be made under the responsibility of qualified medical professionals</li>
+                        <li>Calculation results are theoretical values</li>
                     </ul>
-                    
-                    <h3>Scientific Basis</h3>
-                    <p>This system is based on the propofol pharmacokinetic-pharmacodynamic model by Eleveld et al. (2018) BJA.</p>
-                    
-                    <h3>Developer Information</h3>
-                    <p>YASUYUKI SUZUKI - Ehime University Graduate School of Medicine, Department of Pharmacology</p>
+                    <p class="disclaimer-basis">Based on Eleveld et al. (2018) BJA PK/PD model</p>
+                    <p class="disclaimer-dev">YASUYUKI SUZUKI - Ehime University</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="acceptDisclaimer" class="btn btn-primary">
-    Accept and Start
+                <button id="acceptDisclaimer" class="btn btn-primary btn-block">
+                    Accept and Start
                 </button>
             </div>
         </div>
@@ -69,332 +63,445 @@
 
     <!-- Main Application -->
     <div id="mainApp" class="main-app hidden">
-        <!-- Header -->
+
+        <!-- Compact Header -->
         <header class="app-header">
-            <div class="header-content">
-                <h1>Propofol TCI TIVA V1.2.1</h1>
-                <p>Effect-site Concentration Target Controlled Infusion Integrated System - Enhanced RK4 Integration</p>
+            <div class="header-left">
+                <h1>Propofol TCI <span class="version">V2.0</span></h1>
+            </div>
+            <div class="header-right">
+                <button id="editPatientBtn" class="btn-icon" aria-label="Patient Settings">
+                    <span class="icon-person">&#9787;</span>
+                    <span id="headerPatientSummary" class="patient-summary">35y 70kg</span>
+                </button>
             </div>
         </header>
 
-        <!-- Patient Information Panel -->
-        <section id="patientPanel" class="panel patient-panel">
-            <div class="panel-header">
-                <h2>📋 Patient Information</h2>
-                <button id="editPatientBtn" class="btn btn-secondary">Edit</button>
-            </div>
-            <div class="panel-content">
-                <div class="patient-info-grid">
-                    <div class="info-item">
-                        <label>Patient ID:</label>
-                        <span id="patientId">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Age:</label>
-                        <span id="patientAge">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Weight:</label>
-                        <span id="patientWeight">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Height:</label>
-                        <span id="patientHeight">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>BMI:</label>
-                        <span id="patientBMI">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Sex:</label>
-                        <span id="patientSex">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>ASA-PS:</label>
-                        <span id="patientASA">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Opioid Co-admin:</label>
-                        <span id="patientOpioid">---</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Anesthesia Start Time:</label>
-                        <span id="anesthesiaStartTime">---</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- Step Progress Bar -->
+        <nav class="step-nav">
+            <button class="step-tab active" data-step="0">
+                <span class="step-num">1</span>
+                <span class="step-label">Induction</span>
+            </button>
+            <span class="step-arrow">&#9654;</span>
+            <button class="step-tab" data-step="1">
+                <span class="step-num">2</span>
+                <span class="step-label">Protocol</span>
+            </button>
+            <span class="step-arrow">&#9654;</span>
+            <button class="step-tab" data-step="2">
+                <span class="step-num">3</span>
+                <span class="step-label">Monitoring</span>
+            </button>
+        </nav>
 
-        <!-- App Grid Container -->
-        <div class="app-grid">
-            <!-- App 1: Real-time Induction -->
-            <section id="inductionPanel" class="panel app-panel">
-                <div class="panel-header">
-                    <h2>🚀 Real-time Induction Prediction</h2>
-                    <div class="panel-controls">
-                        <button id="startInductionBtn" class="btn btn-primary">Start</button>
-                        <button id="stopInductionBtn" class="btn btn-danger hidden">Stop</button>
-                        <button id="recordSnapshotBtn" class="btn btn-info hidden">Record</button>
-                    </div>
-                </div>
-                <div class="panel-content">
-                    <div class="induction-controls">
-                        <div class="dose-input">
-                            <label for="inductionBolus">Bolus Dose (mg):</label>
-                            <div class="input-group-controls">
-                                <button type="button" class="btn-adjust btn-minus" data-target="inductionBolus" data-step="5">−</button>
-                                <input type="number" id="inductionBolus" min="10" max="200" step="5" value="140">
-                                <button type="button" class="btn-adjust btn-plus" data-target="inductionBolus" data-step="5">+</button>
-                            </div>
-                        </div>
-                        <div class="dose-input">
-                            <label for="inductionContinuous">Continuous Infusion Rate (mg/hr):</label>
-                            <div class="input-group-controls">
-                                <button type="button" class="btn-adjust btn-minus" data-target="inductionContinuous" data-step="10">−</button>
-                                <input type="number" id="inductionContinuous" min="0" max="500" step="10" value="200">
-                                <button type="button" class="btn-adjust btn-plus" data-target="inductionContinuous" data-step="10">+</button>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Wizard Viewport -->
+        <div class="wizard-viewport">
+            <div class="wizard-track" id="wizardTrack">
 
-                    <div class="concentration-display">
-                        <div class="conc-item">
-                            <label>Plasma Concentration:</label>
-                            <span id="plasmaConcentration" class="concentration-value">0.000</span>
-                            <span class="unit">μg/mL</span>
+                <!-- ============================================ -->
+                <!-- STEP 1: Real-time Induction Prediction        -->
+                <!-- ============================================ -->
+                <section class="wizard-step" data-step="0">
+                    <div class="step-content">
+                        <div class="step-title-bar">
+                            <h2>Real-time Induction Prediction</h2>
                         </div>
-                        <div class="conc-item">
-                            <label>Effect-site Concentration:</label>
-                            <span id="effectConcentration" class="concentration-value">0.000</span>
-                            <span class="unit">μg/mL</span>
-                        </div>
-                        <div class="conc-item">
-                            <label>BIS Value:</label>
-                            <span id="inductionBISValue" class="concentration-value">100.0</span>
-                            <span class="unit">(Sedation Level)</span>
-                        </div>
-                        <div class="conc-item">
-                            <label>Elapsed Time:</label>
-                            <span id="elapsedTime" class="time-value">00:00:00</span>
-                        </div>
-                    </div>
 
-                    <div class="realtime-chart-container">
-                        <canvas id="inductionRealtimeChart"></canvas>
-                    </div>
-
-                    <div id="snapshotsSection" class="snapshots-section hidden">
-                        <h3 id="snapshotsTitle">Records</h3>
-                        <div id="snapshotsList" class="snapshots-list"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- App 2: Protocol Optimization -->
-            <section id="protocolPanel" class="panel app-panel">
-                <div class="panel-header">
-                    <h2>🎯 Advanced Step-down Protocol Optimization</h2>
-                    <button id="optimizeProtocolBtn" class="btn btn-primary">Run Optimization</button>
-                </div>
-                <div class="panel-content">
-                    <div class="protocol-controls">
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="targetConcentration">Target Effect-site Concentration (μg/mL):</label>
-                                <input type="number" id="targetConcentration" min="0.5" max="8.0" step="0.1" value="3.0">
-                            </div>
-                            <div class="input-group">
-                                <label for="protocolBolus">Bolus Dose (mg):</label>
-                                <input type="number" id="protocolBolus" min="10" max="200" step="5" value="140">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="targetReachTime">Target Reach Time (min):</label>
-                                <input type="number" id="targetReachTime" min="10" max="60" step="5" value="20">
-                            </div>
-                            <div class="input-group">
-                                <label for="upperThresholdRatio">Upper Threshold Ratio (%):</label>
-                                <input type="number" id="upperThresholdRatio" min="105" max="130" step="1" value="120">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="reductionFactor">Reduction Factor (%):</label>
-                                <input type="number" id="reductionFactor" min="50" max="90" step="5" value="70">
-                            </div>
-                            <div class="input-group">
-                                <label for="adjustmentInterval">Adjustment Interval (min):</label>
-                                <input type="number" id="adjustmentInterval" min="3" max="10" step="1" value="5">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="protocolResults" class="protocol-results hidden">
-                        <div class="results-summary">
-                            <div class="result-item">
-                                <label>Optimal Infusion Rate:</label>
-                                <span id="optimalRate">---</span>
-                                <span class="unit">mg/hr</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Predicted Final Concentration:</label>
-                                <span id="predictedFinalCe">---</span>
-                                <span class="unit">μg/mL</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Target Accuracy:</label>
-                                <span id="targetAccuracy">---</span>
-                                <span class="unit">%</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Number of Adjustments:</label>
-                                <span id="adjustmentCount">---</span>
-                                <span class="unit">times</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Stability Index:</label>
-                                <span id="stabilityIndex">---</span>
-                                <span class="unit">/100</span>
-                            </div>
-                            <div class="result-item">
-                                <label>Convergence Time:</label>
-                                <span id="convergenceTime">---</span>
-                                <span class="unit">min</span>
+                        <!-- Induction Controls -->
+                        <div class="control-card">
+                            <div class="stepper-row-group">
+                                <div class="stepper-control">
+                                    <label>Bolus (mg)</label>
+                                    <div class="stepper-row">
+                                        <button type="button" class="stepper-btn stepper-minus" data-target="inductionBolus" data-step="5" aria-label="Decrease">&#8722;</button>
+                                        <input type="number" id="inductionBolus" class="stepper-input" min="10" max="200" step="5" value="140" inputmode="numeric">
+                                        <button type="button" class="stepper-btn stepper-plus" data-target="inductionBolus" data-step="5" aria-label="Increase">&#43;</button>
+                                    </div>
+                                </div>
+                                <div class="stepper-control">
+                                    <label>Continuous (mg/hr)</label>
+                                    <div class="stepper-row">
+                                        <button type="button" class="stepper-btn stepper-minus" data-target="inductionContinuous" data-step="10" aria-label="Decrease">&#8722;</button>
+                                        <input type="number" id="inductionContinuous" class="stepper-input" min="0" max="500" step="10" value="200" inputmode="numeric">
+                                        <button type="button" class="stepper-btn stepper-plus" data-target="inductionContinuous" data-step="10" aria-label="Increase">&#43;</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="protocol-chart-container">
-                            <canvas id="protocolChart"></canvas>
+                        <!-- Action Buttons -->
+                        <div class="action-bar">
+                            <button id="startInductionBtn" class="btn btn-primary btn-action">Start</button>
+                            <button id="stopInductionBtn" class="btn btn-danger btn-action hidden">Stop</button>
+                            <button id="recordSnapshotBtn" class="btn btn-secondary btn-action hidden">Record</button>
+                            <button id="recordLOCBtn" class="btn btn-warning btn-action hidden">LOC</button>
                         </div>
 
-                        <div class="protocol-schedule">
-                            <h4>Dosing Schedule</h4>
-                            <div id="protocolTable" class="protocol-table"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- App 3: Live Monitoring -->
-            <section id="monitoringPanel" class="panel app-panel monitoring-panel">
-                <div class="panel-header">
-                    <h2>📊 Actual Dose Monitoring</h2>
-                    <div class="panel-controls">
-                        <button id="addDoseBtn" class="btn btn-primary">Add Dose</button>
-                        <button id="runSimulationBtn" class="btn btn-success">Run Simulation</button>
-                        <button id="exportCsvBtn" class="btn btn-info">Export CSV</button>
-                    </div>
-                </div>
-                <div class="panel-content">
-                    <div class="dose-events-section">
-                        <h4>Dose Events</h4>
-                        <div id="doseEventsList" class="dose-events-list"></div>
-                    </div>
-
-                    <div id="simulationResults" class="simulation-results hidden">
-                        <div class="results-summary">
-                            <div class="result-item">
-                                <label>Maximum Plasma Concentration:</label>
-                                <span id="maxPlasmaConc">---</span>
-                                <span class="unit">μg/mL</span>
+                        <!-- Concentration Display -->
+                        <div class="concentration-display">
+                            <div class="conc-card">
+                                <div class="conc-label">Plasma Cp</div>
+                                <div class="conc-value-row">
+                                    <span id="plasmaConcentration" class="conc-value">0.000</span>
+                                    <span class="conc-unit">&#956;g/mL</span>
+                                </div>
                             </div>
-                            <div class="result-item">
-                                <label>Maximum Effect-site Concentration:</label>
-                                <span id="maxEffectConc">---</span>
-                                <span class="unit">μg/mL</span>
+                            <div class="conc-card conc-card-primary">
+                                <div class="conc-label">Effect-site Ce</div>
+                                <div class="conc-value-row">
+                                    <span id="effectConcentration" class="conc-value">0.000</span>
+                                    <span class="conc-unit">&#956;g/mL</span>
+                                </div>
                             </div>
-                            <div class="result-item">
-                                <label>Minimum BIS Value:</label>
-                                <span id="minBISValue">---</span>
-                                <span class="unit">(Sedation Level)</span>
+                            <div class="conc-card">
+                                <div class="conc-label">Elapsed</div>
+                                <div class="conc-value-row">
+                                    <span id="elapsedTime" class="conc-value time-mono">00:00</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="monitoring-chart-container">
-                            <canvas id="monitoringChart"></canvas>
+                        <!-- LOC Ce Display (shown after LOC recorded) -->
+                        <div id="locCeDisplay" class="loc-ce-display hidden">
+                            <div class="loc-ce-card">
+                                <span class="loc-ce-label">LOC Ce (Sleep Onset)</span>
+                                <span id="locCeValue" class="loc-ce-value">---</span>
+                                <span class="loc-ce-unit">&#956;g/mL</span>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Chart -->
+                        <div class="chart-container">
+                            <canvas id="inductionRealtimeChart"></canvas>
+                        </div>
+
+                        <!-- Snapshots -->
+                        <div id="snapshotsSection" class="snapshots-section hidden">
+                            <h3>Records</h3>
+                            <div id="snapshotsList" class="snapshots-list"></div>
+                        </div>
+
+                        <!-- Next Step Button -->
+                        <div class="step-nav-bottom">
+                            <button class="btn btn-primary btn-block btn-next" data-goto="1">
+                                Proceed to Protocol &#9654;
+                            </button>
                         </div>
                     </div>
-                </div>
-            </section>
-        </div>
-    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- STEP 2: Protocol Optimization                 -->
+                <!-- ============================================ -->
+                <section class="wizard-step" data-step="1">
+                    <div class="step-content">
+                        <div class="step-title-bar">
+                            <h2>Step-down Protocol Optimization</h2>
+                        </div>
+
+                        <!-- LOC Ce Transfer Banner -->
+                        <div id="locTransferBanner" class="transfer-banner hidden">
+                            <div class="transfer-info">
+                                <span class="transfer-label">LOC Ce from Induction:</span>
+                                <span id="transferredLocCe" class="transfer-value">---</span>
+                                <span class="transfer-unit">&#956;g/mL</span>
+                            </div>
+                        </div>
+
+                        <!-- Safety Margin Setting -->
+                        <div class="control-card">
+                            <div class="margin-setting">
+                                <label class="margin-label">Safety Margin</label>
+                                <div class="margin-row">
+                                    <span class="margin-formula">LOC Ce + </span>
+                                    <div class="stepper-control stepper-compact">
+                                        <div class="stepper-row">
+                                            <button type="button" class="stepper-btn stepper-minus" data-target="safetyMargin" data-step="0.1" aria-label="Decrease">&#8722;</button>
+                                            <input type="number" id="safetyMargin" class="stepper-input" min="0" max="5.0" step="0.1" value="1.5" inputmode="decimal">
+                                            <button type="button" class="stepper-btn stepper-plus" data-target="safetyMargin" data-step="0.1" aria-label="Increase">&#43;</button>
+                                        </div>
+                                    </div>
+                                    <span class="margin-unit">&#956;g/mL</span>
+                                </div>
+                                <div class="target-result">
+                                    <span class="target-result-label">Target Ce =</span>
+                                    <span id="calculatedTargetCe" class="target-result-value">---</span>
+                                    <span class="target-result-unit">&#956;g/mL</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Protocol Parameters -->
+                        <div class="control-card">
+                            <div class="param-grid">
+                                <div class="param-item">
+                                    <label for="targetConcentration">Target Ce (&#956;g/mL)</label>
+                                    <div class="stepper-row">
+                                        <button type="button" class="stepper-btn stepper-minus" data-target="targetConcentration" data-step="0.1" aria-label="Decrease">&#8722;</button>
+                                        <input type="number" id="targetConcentration" class="stepper-input" min="0.5" max="8.0" step="0.1" value="3.0" inputmode="decimal">
+                                        <button type="button" class="stepper-btn stepper-plus" data-target="targetConcentration" data-step="0.1" aria-label="Increase">&#43;</button>
+                                    </div>
+                                </div>
+                                <div class="param-item">
+                                    <label for="protocolBolus">Bolus (mg)</label>
+                                    <div class="stepper-row">
+                                        <button type="button" class="stepper-btn stepper-minus" data-target="protocolBolus" data-step="5" aria-label="Decrease">&#8722;</button>
+                                        <input type="number" id="protocolBolus" class="stepper-input" min="10" max="200" step="5" value="140" inputmode="numeric">
+                                        <button type="button" class="stepper-btn stepper-plus" data-target="protocolBolus" data-step="5" aria-label="Increase">&#43;</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Settings (Collapsible) -->
+                            <details class="advanced-settings">
+                                <summary>Advanced Settings</summary>
+                                <div class="param-grid">
+                                    <div class="param-item">
+                                        <label for="targetReachTime">Reach Time (min)</label>
+                                        <div class="stepper-row">
+                                            <button type="button" class="stepper-btn stepper-minus" data-target="targetReachTime" data-step="5" aria-label="Decrease">&#8722;</button>
+                                            <input type="number" id="targetReachTime" class="stepper-input" min="10" max="60" step="5" value="20" inputmode="numeric">
+                                            <button type="button" class="stepper-btn stepper-plus" data-target="targetReachTime" data-step="5" aria-label="Increase">&#43;</button>
+                                        </div>
+                                    </div>
+                                    <div class="param-item">
+                                        <label for="upperThresholdRatio">Upper Threshold (%)</label>
+                                        <div class="stepper-row">
+                                            <button type="button" class="stepper-btn stepper-minus" data-target="upperThresholdRatio" data-step="1" aria-label="Decrease">&#8722;</button>
+                                            <input type="number" id="upperThresholdRatio" class="stepper-input" min="105" max="130" step="1" value="120" inputmode="numeric">
+                                            <button type="button" class="stepper-btn stepper-plus" data-target="upperThresholdRatio" data-step="1" aria-label="Increase">&#43;</button>
+                                        </div>
+                                    </div>
+                                    <div class="param-item">
+                                        <label for="reductionFactor">Reduction Factor (%)</label>
+                                        <div class="stepper-row">
+                                            <button type="button" class="stepper-btn stepper-minus" data-target="reductionFactor" data-step="5" aria-label="Decrease">&#8722;</button>
+                                            <input type="number" id="reductionFactor" class="stepper-input" min="50" max="90" step="5" value="70" inputmode="numeric">
+                                            <button type="button" class="stepper-btn stepper-plus" data-target="reductionFactor" data-step="5" aria-label="Increase">&#43;</button>
+                                        </div>
+                                    </div>
+                                    <div class="param-item">
+                                        <label for="adjustmentInterval">Adj. Interval (min)</label>
+                                        <div class="stepper-row">
+                                            <button type="button" class="stepper-btn stepper-minus" data-target="adjustmentInterval" data-step="1" aria-label="Decrease">&#8722;</button>
+                                            <input type="number" id="adjustmentInterval" class="stepper-input" min="3" max="10" step="1" value="5" inputmode="numeric">
+                                            <button type="button" class="stepper-btn stepper-plus" data-target="adjustmentInterval" data-step="1" aria-label="Increase">&#43;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- Execute Button -->
+                        <div class="action-bar">
+                            <button id="optimizeProtocolBtn" class="btn btn-primary btn-block">Execute Optimization</button>
+                        </div>
+
+                        <!-- Protocol Results -->
+                        <div id="protocolResults" class="protocol-results hidden">
+                            <div class="results-grid">
+                                <div class="result-card">
+                                    <span class="result-label">Optimal Rate</span>
+                                    <span id="optimalRate" class="result-value">---</span>
+                                    <span class="result-unit">mg/hr</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Final Ce</span>
+                                    <span id="predictedFinalCe" class="result-value">---</span>
+                                    <span class="result-unit">&#956;g/mL</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Accuracy</span>
+                                    <span id="targetAccuracy" class="result-value">---</span>
+                                    <span class="result-unit">%</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Adjustments</span>
+                                    <span id="adjustmentCount" class="result-value">---</span>
+                                    <span class="result-unit">times</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Stability</span>
+                                    <span id="stabilityIndex" class="result-value">---</span>
+                                    <span class="result-unit">/100</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Convergence</span>
+                                    <span id="convergenceTime" class="result-value">---</span>
+                                    <span class="result-unit">min</span>
+                                </div>
+                            </div>
+
+                            <div class="chart-container">
+                                <canvas id="protocolChart"></canvas>
+                            </div>
+
+                            <details class="dosing-schedule-details">
+                                <summary>Dosing Schedule</summary>
+                                <div id="protocolTable" class="protocol-table"></div>
+                            </details>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="step-nav-bottom step-nav-dual">
+                            <button class="btn btn-secondary btn-back" data-goto="0">
+                                &#9664; Induction
+                            </button>
+                            <button id="transferToMonitoringBtn" class="btn btn-primary btn-next" data-goto="2">
+                                Monitoring &#9654;
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- STEP 3: Actual Dose Monitoring                -->
+                <!-- ============================================ -->
+                <section class="wizard-step" data-step="2">
+                    <div class="step-content">
+                        <div class="step-title-bar">
+                            <h2>Actual Dose Monitoring</h2>
+                        </div>
+
+                        <!-- Protocol Transfer Banner -->
+                        <div id="protocolTransferBanner" class="transfer-banner hidden">
+                            <div class="transfer-info">
+                                <span class="transfer-label">Protocol loaded:</span>
+                                <span id="transferredProtocolInfo" class="transfer-value">---</span>
+                            </div>
+                        </div>
+
+                        <!-- Dose Events -->
+                        <div class="control-card">
+                            <div class="dose-events-header">
+                                <h3>Dose Events</h3>
+                                <button id="addDoseBtn" class="btn btn-primary btn-sm">+ Add</button>
+                            </div>
+                            <div id="doseEventsList" class="dose-events-list"></div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-bar">
+                            <button id="runSimulationBtn" class="btn btn-primary btn-action">Run Simulation</button>
+                            <button id="exportCsvBtn" class="btn btn-secondary btn-action">Export CSV</button>
+                        </div>
+
+                        <!-- Simulation Results -->
+                        <div id="simulationResults" class="simulation-results hidden">
+                            <div class="results-grid results-grid-3">
+                                <div class="result-card">
+                                    <span class="result-label">Max Cp</span>
+                                    <span id="maxPlasmaConc" class="result-value">---</span>
+                                    <span class="result-unit">&#956;g/mL</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Max Ce</span>
+                                    <span id="maxEffectConc" class="result-value">---</span>
+                                    <span class="result-unit">&#956;g/mL</span>
+                                </div>
+                                <div class="result-card">
+                                    <span class="result-label">Min BIS</span>
+                                    <span id="minBISValue" class="result-value">---</span>
+                                </div>
+                            </div>
+
+                            <div class="chart-container">
+                                <canvas id="monitoringChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="step-nav-bottom">
+                            <button class="btn btn-secondary btn-block btn-back" data-goto="1">
+                                &#9664; Back to Protocol
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /wizard-track -->
+        </div><!-- /wizard-viewport -->
+
+    </div><!-- /mainApp -->
 
     <!-- Patient Edit Modal -->
     <div id="patientModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Edit Patient Information</h3>
+                <h3>Patient Information</h3>
                 <button id="closePatientModal" class="btn-close">&times;</button>
             </div>
             <form id="patientForm" class="modal-body">
                 <div class="form-group">
-                    <label for="editPatientId">Patient ID:</label>
+                    <label for="editPatientId">Patient ID</label>
                     <input type="text" id="editPatientId" required>
                 </div>
-                
-                <div class="form-row">
+
+                <div class="form-row-2">
                     <div class="form-group">
-                        <label for="editAge">Age (years):</label>
-                        <div class="input-group-controls">
-                            <button type="button" class="btn-adjust btn-minus" data-target="editAge" data-step="1">−</button>
-                            <input type="number" id="editAge" min="1" max="100" step="1" value="35">
-                            <button type="button" class="btn-adjust btn-plus" data-target="editAge" data-step="1">+</button>
+                        <label for="editAge">Age</label>
+                        <div class="stepper-row">
+                            <button type="button" class="stepper-btn stepper-minus" data-target="editAge" data-step="1" aria-label="Decrease">&#8722;</button>
+                            <input type="number" id="editAge" class="stepper-input" min="1" max="100" step="1" value="35" inputmode="numeric">
+                            <button type="button" class="stepper-btn stepper-plus" data-target="editAge" data-step="1" aria-label="Increase">&#43;</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="editWeight">Weight (kg):</label>
-                        <div class="input-group-controls">
-                            <button type="button" class="btn-adjust btn-minus" data-target="editWeight" data-step="0.5">−</button>
-                            <input type="number" id="editWeight" min="5" max="150" step="0.1" value="70">
-                            <button type="button" class="btn-adjust btn-plus" data-target="editWeight" data-step="0.5">+</button>
+                        <label for="editWeight">Weight (kg)</label>
+                        <div class="stepper-row">
+                            <button type="button" class="stepper-btn stepper-minus" data-target="editWeight" data-step="0.5" aria-label="Decrease">&#8722;</button>
+                            <input type="number" id="editWeight" class="stepper-input" min="5" max="150" step="0.1" value="70" inputmode="decimal">
+                            <button type="button" class="stepper-btn stepper-plus" data-target="editWeight" data-step="0.5" aria-label="Increase">&#43;</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row-2">
                     <div class="form-group">
-                        <label for="editHeight">Height (cm):</label>
-                        <div class="input-group-controls">
-                            <button type="button" class="btn-adjust btn-minus" data-target="editHeight" data-step="1">−</button>
-                            <input type="number" id="editHeight" min="50" max="200" step="1" value="170">
-                            <button type="button" class="btn-adjust btn-plus" data-target="editHeight" data-step="1">+</button>
+                        <label for="editHeight">Height (cm)</label>
+                        <div class="stepper-row">
+                            <button type="button" class="stepper-btn stepper-minus" data-target="editHeight" data-step="1" aria-label="Decrease">&#8722;</button>
+                            <input type="number" id="editHeight" class="stepper-input" min="50" max="200" step="1" value="170" inputmode="numeric">
+                            <button type="button" class="stepper-btn stepper-plus" data-target="editHeight" data-step="1" aria-label="Increase">&#43;</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>BMI:</label>
-                        <span id="bmiCalculated" class="calculated-value">24.2</span>
+                        <label>BMI</label>
+                        <div class="bmi-display">
+                            <span id="bmiCalculated" class="bmi-value">24.2</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row-2">
                     <div class="form-group">
-                        <label>Sex:</label>
+                        <label>Sex</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="sex" value="male" checked> Male</label>
-                            <label><input type="radio" name="sex" value="female"> Female</label>
+                            <label class="radio-label"><input type="radio" name="sex" value="male" checked> Male</label>
+                            <label class="radio-label"><input type="radio" name="sex" value="female"> Female</label>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>ASA-PS:</label>
+                        <label>ASA-PS</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="asa" value="1-2" checked> I-II</label>
-                            <label><input type="radio" name="asa" value="3-4"> III-IV</label>
+                            <label class="radio-label"><input type="radio" name="asa" value="1-2" checked> I-II</label>
+                            <label class="radio-label"><input type="radio" name="asa" value="3-4"> III-IV</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Opioid Co-administration:</label>
+                    <label>Opioid Co-administration</label>
                     <div class="radio-group">
-                        <label><input type="radio" name="opioid" value="yes" checked> Yes</label>
-                        <label><input type="radio" name="opioid" value="no"> No</label>
+                        <label class="radio-label"><input type="radio" name="opioid" value="yes" checked> Yes</label>
+                        <label class="radio-label"><input type="radio" name="opioid" value="no"> No</label>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="editAnesthesiaStart">Anesthesia Start Time:</label>
-                    <input type="time" id="editAnesthesiaStart" value="08:00">
+                    <label for="editAnesthesiaStart">Anesthesia Start Time</label>
+                    <input type="time" id="editAnesthesiaStart" class="time-input" value="08:00">
                 </div>
             </form>
             <div class="modal-footer">
@@ -413,26 +520,26 @@
             </div>
             <form id="doseForm" class="modal-body">
                 <div class="form-group">
-                    <label for="doseTime">Dose Time:</label>
-                    <input type="time" id="doseTime" required>
-                    <small>Anesthesia Start Time: <span id="anesthesiaStartReference">08:00</span></small>
+                    <label for="doseTime">Time</label>
+                    <input type="time" id="doseTime" class="time-input" required>
+                    <small class="form-hint">Start: <span id="anesthesiaStartReference">08:00</span></small>
                 </div>
-                
-                <div class="form-row">
+
+                <div class="form-row-2">
                     <div class="form-group">
-                        <label for="doseBolusAmount">Bolus Dose (mg):</label>
-                        <div class="input-group-controls">
-                            <button type="button" class="btn-adjust btn-minus" data-target="doseBolusAmount" data-step="5">−</button>
-                            <input type="number" id="doseBolusAmount" min="0" max="200" step="1" value="0">
-                            <button type="button" class="btn-adjust btn-plus" data-target="doseBolusAmount" data-step="5">+</button>
+                        <label for="doseBolusAmount">Bolus (mg)</label>
+                        <div class="stepper-row">
+                            <button type="button" class="stepper-btn stepper-minus" data-target="doseBolusAmount" data-step="5" aria-label="Decrease">&#8722;</button>
+                            <input type="number" id="doseBolusAmount" class="stepper-input" min="0" max="200" step="1" value="0" inputmode="numeric">
+                            <button type="button" class="stepper-btn stepper-plus" data-target="doseBolusAmount" data-step="5" aria-label="Increase">&#43;</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="doseContinuousRate">Continuous Infusion Rate (mg/hr):</label>
-                        <div class="input-group-controls">
-                            <button type="button" class="btn-adjust btn-minus" data-target="doseContinuousRate" data-step="10">−</button>
-                            <input type="number" id="doseContinuousRate" min="0" max="500" step="5" value="0">
-                            <button type="button" class="btn-adjust btn-plus" data-target="doseContinuousRate" data-step="10">+</button>
+                        <label for="doseContinuousRate">Continuous (mg/hr)</label>
+                        <div class="stepper-row">
+                            <button type="button" class="stepper-btn stepper-minus" data-target="doseContinuousRate" data-step="10" aria-label="Decrease">&#8722;</button>
+                            <input type="number" id="doseContinuousRate" class="stepper-input" min="0" max="500" step="5" value="0" inputmode="numeric">
+                            <button type="button" class="stepper-btn stepper-plus" data-target="doseContinuousRate" data-step="10" aria-label="Increase">&#43;</button>
                         </div>
                     </div>
                 </div>
@@ -469,8 +576,6 @@
                         console.log('SW registration failed: ', registrationError);
                     });
             });
-        } else {
-            console.log('Service Worker not available (file:// protocol or browser not supported)');
         }
     </script>
 </body>

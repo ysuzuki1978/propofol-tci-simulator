@@ -1,22 +1,22 @@
 {
-  "name": "Propofol TCI TIVA V1.2.1",
+  "name": "Propofol TCI TIVA V2.0.0",
   "short_name": "PropoTCI",
-  "description": "Propofol Effect-site Concentration Target Controlled Infusion Integrated System with Enhanced RK4 Integration - Eleveld PK/PD Model",
-  "version": "1.2.1",
+  "description": "Propofol TCI TIVA - Seamless 3-step workflow: Induction prediction, Protocol optimization, Dose monitoring with iPhone-optimized UI",
+  "version": "2.0.0",
   "scope": "/",
   "start_url": "./index.html",
   "display": "fullscreen",
-  "orientation": "landscape-primary",
+  "orientation": "any",
   "theme_color": "#2196F3",
   "background_color": "#ffffff",
   "categories": ["medical", "education", "productivity"],
   "lang": "en",
   "dir": "ltr",
-  
+
   "icons": [
     {
       "src": "images/icon-32.png",
-      "sizes": "32x32", 
+      "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
     },
@@ -27,18 +27,18 @@
       "purpose": "any maskable"
     },
     {
-      "src": "images/icon-512.png", 
+      "src": "images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
   ],
-  
+
   "shortcuts": [
     {
-      "name": "Real-time Induction with BIS",
+      "name": "Real-time Induction",
       "short_name": "Induction",
-      "description": "Real-time propofol induction with BIS monitoring",
+      "description": "Real-time concentration prediction during anesthesia induction",
       "url": "./index.html#induction",
       "icons": [
         {
@@ -48,21 +48,21 @@
       ]
     },
     {
-      "name": "Protocol Optimization", 
+      "name": "Step-down Protocol Optimization",
       "short_name": "Protocol",
-      "description": "Advanced step-down protocol optimization",
+      "description": "Advanced step-down protocol optimization calculation",
       "url": "./index.html#protocol",
       "icons": [
         {
-          "src": "images/icon-192.png", 
+          "src": "images/icon-192.png",
           "sizes": "192x192"
         }
       ]
     },
     {
       "name": "Dose Monitoring",
-      "short_name": "Monitor", 
-      "description": "Actual dose input and concentration monitoring",
+      "short_name": "Monitoring",
+      "description": "Input of actual dose and concentration monitoring",
       "url": "./index.html#monitoring",
       "icons": [
         {
@@ -81,7 +81,7 @@
       "form_factor": "wide"
     },
     {
-      "src": "images/screenshot-narrow.png", 
+      "src": "images/screenshot-narrow.png",
       "sizes": "720x1280",
       "type": "image/png",
       "form_factor": "narrow"
@@ -89,7 +89,7 @@
   ],
 
   "prefer_related_applications": false,
-  
+
   "edge_side_panel": {
     "preferred_width": 400
   },

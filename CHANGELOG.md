@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-03-14
+
+### Added
+- **Seamless 3-Step Wizard Workflow**: Unified Induction -> Protocol -> Monitoring pipeline
+  - Step 1 (Induction): Real-time Ce/Cp prediction with LOC (Loss of Consciousness) Ce recording
+  - Step 2 (Protocol): Auto-receives LOC Ce from Step 1, configurable safety margin (default +1.5 µg/mL), auto-calculates target Ce
+  - Step 3 (Monitoring): Auto-imports protocol dosing schedule (bolus + step-down adjustments)
+- **LOC Button**: One-tap recording of sleep onset effect-site concentration during induction
+- **Safety Margin Setting**: Adjustable margin above LOC Ce to prevent intraoperative awareness (default +1.5 µg/mL for propofol)
+- **Swipe Navigation**: Left/right swipe gesture to navigate between workflow steps
+- **Step Progress Bar**: Visual step indicator with completed/active state tracking
+- **Data Transfer Banners**: Visual confirmation when data flows between steps
+
+### Changed
+- **Complete UI Redesign**: Mobile-first 3-step wizard replacing stacked panel layout
+  - Compact header with patient summary
+  - Tab-based step navigation replacing scroll-based panel access
+  - Bottom-sheet style modals for iOS-native feel
+- **iPhone Optimization**:
+  - Safe area support (notch, home indicator) via `env(safe-area-inset-*)`
+  - 48px+ touch targets on all stepper buttons
+  - `font-size: max(16px, 1rem)` on inputs to prevent iOS auto-zoom
+  - `viewport-fit=cover` for full-screen PWA experience
+  - `touch-action: manipulation` to prevent double-tap zoom
+- **Stepper Controls**: Unified stepper with long-press acceleration, floating-point display fix
+- **Chart.js Touch Optimization**: Tap-to-show tooltips, `intersect: false` for finger-friendly interaction
+- **Protocol Parameters**: Advanced settings collapsed by default, reducing initial cognitive load
+- **Version**: V1.2.1 -> V2.0.0
+- **PWA Manifest**: Updated orientation to `any`, theme color maintained #2196F3
+
+### Fixed
+- **Floating Point Display**: Stepper values now display with correct decimal precision
+
 ## [Unreleased]
 
 ## [1.2.1] - 2025-07-20
