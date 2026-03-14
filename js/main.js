@@ -502,7 +502,7 @@ class MainApplicationController {
     updateRealtimeChart(state) {
         if (this.realtimeChart && state.isRunning) {
             this.realtimeChart.addDataPoint(
-                state.elapsedTime,
+                state.elapsedTime * 60,  // Convert minutes to seconds
                 state.effectSiteConcentration,
                 state.bisValue
             );
