@@ -865,6 +865,11 @@ class MainApplicationController {
     }
 
     runMonitoringSimulation() {
+        const events = this.monitoringEngine.getDoseEvents();
+        if (!events || events.length === 0) {
+            alert('No dose events registered.\nPlease run Protocol optimization first, or add dose events manually.');
+            return;
+        }
         try {
             const result = this.monitoringEngine.runSimulation();
             this.appState.simulationResult = result;
