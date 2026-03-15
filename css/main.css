@@ -1,33 +1,40 @@
-/* Propofol TCI TIVA V2.0 - Mobile-First Seamless Workflow */
+/* Propofol TCI TIVA V2.1 - OR Monitor Dark Theme */
 /* iPhone-optimized 3-step wizard UI */
 
 /* ============================================
-   CSS Variables
+   CSS Variables - OR Monitor Dark Palette
    ============================================ */
 :root {
-    --primary: #2196F3;
-    --primary-dark: #1976D2;
-    --primary-light: #e3f2fd;
+    --primary: #00BCD4;
+    --primary-dark: #0097A7;
+    --primary-light: rgba(0,188,212,0.15);
+
     --success: #4CAF50;
-    --warning: #ea8600;
+    --success-light: rgba(76,175,80,0.15);
+    --warning: #FFC107;
+    --warning-light: rgba(255,193,7,0.15);
     --danger: #F44336;
-    --info: #1976D2;
+    --danger-light: rgba(244,67,54,0.15);
+    --info: #29B6F6;
 
-    --bg: #f8f9fa;
-    --bg-card: #ffffff;
-    --bg-surface: #f1f3f4;
+    --bg: #1a1a1a;
+    --bg-card: #2d2d2d;
+    --bg-surface: #3a3a3a;
+    --bg-elevated: #444444;
 
-    --text: #202124;
-    --text-secondary: #5f6368;
-    --text-muted: #9aa0a6;
+    --text: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --text-muted: #707070;
+    --text-bright: #ffffff;
 
-    --border: #dadce0;
+    --border: #4a4a4a;
+    --border-light: #3a3a3a;
     --border-radius: 12px;
     --border-radius-sm: 8px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-    --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+    --shadow: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.5);
 
-    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    --font: "Figtree", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     --mono: "SF Mono", "Menlo", "Monaco", monospace;
 
     --sat: env(safe-area-inset-top, 0px);
@@ -37,7 +44,20 @@
 
     --header-h: 48px;
     --step-nav-h: 44px;
+
+    /* Chart colors */
+    --chart-cp: #29B6F6;
+    --chart-ce: #4CAF50;
+    --chart-rate: #CE93D8;
+    --chart-target: #F44336;
+    --chart-upper: #FFC107;
+    --chart-grid: rgba(255,255,255,0.08);
 }
+
+/* ============================================
+   Google Fonts
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap');
 
 /* ============================================
    Reset & Base
@@ -68,6 +88,7 @@ body {
 /* Prevent iOS auto-zoom on input focus */
 input, select, textarea {
     font-size: max(16px, 1rem);
+    color: var(--text);
 }
 
 /* ============================================
@@ -76,7 +97,7 @@ input, select, textarea {
 .loading-screen {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: #111111;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -91,14 +112,23 @@ input, select, textarea {
 
 .loading-content {
     text-align: center;
-    color: white;
+    color: var(--primary);
+}
+
+.loading-content h2 {
+    color: var(--text-bright);
+    margin-top: 8px;
+}
+
+.loading-content p {
+    color: var(--text-secondary);
 }
 
 .spinner {
     width: 36px;
     height: 36px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: white;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
     border-radius: 50%;
     margin: 0 auto 16px;
     animation: spin 0.8s linear infinite;
@@ -114,7 +144,7 @@ input, select, textarea {
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.7);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -140,6 +170,7 @@ input, select, textarea {
     transform: translateY(100%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     padding-bottom: var(--sab);
+    border-top: 1px solid var(--border);
 }
 
 .modal.active .modal-content {
@@ -161,6 +192,7 @@ input, select, textarea {
 .modal-header h2, .modal-header h3 {
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-bright);
 }
 
 .modal-body {
@@ -191,6 +223,7 @@ input, select, textarea {
     max-width: 420px;
     margin: auto;
     padding-bottom: 0;
+    border: 1px solid var(--border);
 }
 
 .disclaimer-content ul {
@@ -198,10 +231,15 @@ input, select, textarea {
     padding-left: 20px;
     font-size: 14px;
     line-height: 1.6;
+    color: var(--text);
 }
 
 .disclaimer-content li {
     margin-bottom: 4px;
+}
+
+.disclaimer-content li strong {
+    color: var(--warning);
 }
 
 .disclaimer-basis {
@@ -232,13 +270,13 @@ input, select, textarea {
 }
 
 /* ============================================
-   Header - Compact
+   Header - Dark OR Style
    ============================================ */
 .app-header {
-    height: var(--header-h);
+    min-height: var(--header-h);
     padding-top: var(--sat);
-    background: var(--primary);
-    color: white;
+    background: #111111;
+    color: var(--text-bright);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -246,19 +284,22 @@ input, select, textarea {
     padding-right: max(12px, var(--sar));
     flex-shrink: 0;
     z-index: 10;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .header-left h1 {
     font-size: 17px;
     font-weight: 600;
     white-space: nowrap;
+    color: var(--primary);
 }
 
 .version {
     font-size: 12px;
     font-weight: 400;
     opacity: 0.8;
-    background: rgba(255,255,255,0.2);
+    background: rgba(0,188,212,0.2);
+    color: var(--primary);
     padding: 1px 6px;
     border-radius: 4px;
     margin-left: 4px;
@@ -271,9 +312,9 @@ input, select, textarea {
 }
 
 .btn-icon {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: white;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
+    color: var(--text);
     height: 36px;
     padding: 0 10px;
     border-radius: 8px;
@@ -284,19 +325,21 @@ input, select, textarea {
     gap: 4px;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    transition: background 0.15s;
 }
 
 .btn-icon:active {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
 }
 
 .patient-summary {
     font-size: 12px;
-    opacity: 0.9;
+    color: var(--text-secondary);
 }
 
 .icon-person {
     font-size: 16px;
+    color: var(--primary);
 }
 
 /* ============================================
@@ -304,8 +347,8 @@ input, select, textarea {
    ============================================ */
 .step-nav {
     height: var(--step-nav-h);
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
+    background: #222222;
+    border-bottom: 1px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -345,7 +388,7 @@ input, select, textarea {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: var(--border);
+    background: var(--bg-surface);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
@@ -356,12 +399,12 @@ input, select, textarea {
 
 .step-tab.active .step-num {
     background: var(--primary);
-    color: white;
+    color: #111111;
 }
 
 .step-tab.completed .step-num {
     background: var(--success);
-    color: white;
+    color: #111111;
 }
 
 .step-label {
@@ -369,7 +412,7 @@ input, select, textarea {
 }
 
 .step-arrow {
-    color: var(--border);
+    color: var(--text-muted);
     font-size: 10px;
 }
 
@@ -415,7 +458,7 @@ input, select, textarea {
 .step-title-bar h2 {
     font-size: 18px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--text-bright);
 }
 
 /* ============================================
@@ -427,6 +470,7 @@ input, select, textarea {
     padding: 12px;
     margin-bottom: 12px;
     box-shadow: var(--shadow);
+    border: 1px solid var(--border-light);
 }
 
 /* ============================================
@@ -486,12 +530,12 @@ input, select, textarea {
 
 .stepper-btn:active {
     background: var(--primary);
-    color: white;
+    color: #111111;
 }
 
 .stepper-btn.holding {
     background: var(--primary);
-    color: white;
+    color: #111111;
 }
 
 .stepper-input {
@@ -574,17 +618,17 @@ input, select, textarea {
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
-.btn-primary { background: var(--primary); color: white; }
+.btn-primary { background: var(--primary); color: #111111; font-weight: 700; }
 .btn-primary:active:not(:disabled) { background: var(--primary-dark); }
 .btn-secondary { background: var(--bg-surface); color: var(--text); border: 1px solid var(--border); }
 .btn-danger { background: var(--danger); color: white; }
-.btn-warning { background: var(--warning); color: white; }
-.btn-success { background: var(--success); color: white; }
-.btn-info { background: var(--info); color: white; }
+.btn-warning { background: var(--warning); color: #111111; font-weight: 700; }
+.btn-success { background: var(--success); color: #111111; }
+.btn-info { background: var(--info); color: #111111; }
 
 .btn-block { width: 100%; }
 .btn-sm { padding: 6px 14px; font-size: 13px; }
@@ -607,11 +651,12 @@ input, select, textarea {
     border-radius: var(--border-radius-sm);
     padding: 8px;
     text-align: center;
+    border: 1px solid var(--border-light);
 }
 
 .conc-card-primary {
     background: var(--primary-light);
-    border: 1px solid var(--primary);
+    border: 1px solid var(--primary-dark);
 }
 
 .conc-label {
@@ -632,7 +677,7 @@ input, select, textarea {
     font-family: var(--mono);
     font-size: 20px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--text-bright);
 }
 
 .conc-card-primary .conc-value {
@@ -656,7 +701,7 @@ input, select, textarea {
 }
 
 .loc-ce-card {
-    background: linear-gradient(135deg, #fef3e0, #fff8e1);
+    background: var(--warning-light);
     border: 2px solid var(--warning);
     border-radius: var(--border-radius);
     padding: 12px;
@@ -690,7 +735,7 @@ input, select, textarea {
    ============================================ */
 .transfer-banner {
     background: var(--primary-light);
-    border: 1px solid var(--primary);
+    border: 1px solid var(--primary-dark);
     border-radius: var(--border-radius-sm);
     padding: 10px 12px;
     margin-bottom: 12px;
@@ -733,7 +778,7 @@ input, select, textarea {
 .margin-label {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--text-bright);
 }
 
 .margin-row {
@@ -761,6 +806,7 @@ input, select, textarea {
     display: flex;
     align-items: center;
     gap: 6px;
+    border: 1px solid var(--border-light);
 }
 
 .target-result-label {
@@ -832,9 +878,9 @@ input, select, textarea {
     width: 100%;
     height: 220px;
     margin-bottom: 12px;
-    background: var(--bg-card);
+    background: #1e1e1e;
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-light);
     padding: 4px;
     touch-action: pan-y;
 }
@@ -858,6 +904,7 @@ input, select, textarea {
     border-radius: var(--border-radius-sm);
     padding: 8px;
     text-align: center;
+    border: 1px solid var(--border-light);
 }
 
 .result-label {
@@ -872,7 +919,7 @@ input, select, textarea {
     font-family: var(--mono);
     font-size: 18px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--text-bright);
     display: block;
 }
 
@@ -920,21 +967,23 @@ input, select, textarea {
     border: 1px solid var(--border);
     padding: 6px 8px;
     text-align: center;
+    color: var(--text);
 }
 
 .protocol-table th {
     background: var(--bg-surface);
     font-weight: 600;
     font-size: 11px;
+    color: var(--text-secondary);
 }
 
 .protocol-table .predictive {
-    background: #e3f2fd;
+    background: rgba(0,188,212,0.15);
     border-left: 3px solid var(--info);
 }
 
 .protocol-table .reactive {
-    background: #fce8e6;
+    background: rgba(244,67,54,0.15);
     border-left: 3px solid var(--danger);
 }
 
@@ -951,6 +1000,7 @@ input, select, textarea {
 .dose-events-header h3 {
     font-size: 15px;
     font-weight: 600;
+    color: var(--text-bright);
 }
 
 .dose-events-list {
@@ -974,6 +1024,7 @@ input, select, textarea {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 2px;
+    color: var(--text-bright);
 }
 
 .dose-details {
@@ -1016,6 +1067,7 @@ input, select, textarea {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 8px;
+    color: var(--text-bright);
 }
 
 .snapshot-item {
@@ -1035,6 +1087,7 @@ input, select, textarea {
 .snapshot-title {
     font-size: 13px;
     font-weight: 600;
+    color: var(--text);
 }
 
 .snapshot-time {
@@ -1094,7 +1147,8 @@ input, select, textarea {
     border-radius: var(--border-radius-sm);
     font-size: 16px;
     transition: border-color 0.2s;
-    background: var(--bg-card);
+    background: var(--bg-surface);
+    color: var(--text);
 }
 
 .form-group input:focus,
@@ -1126,6 +1180,7 @@ input, select, textarea {
     align-items: center;
     justify-content: center;
     margin-top: 6px;
+    border: 1px solid var(--border-light);
 }
 
 .bmi-value {
@@ -1147,11 +1202,13 @@ input, select, textarea {
     font-size: 15px;
     cursor: pointer;
     font-weight: normal;
+    color: var(--text);
 }
 
 .radio-label input[type="radio"] {
     width: 18px;
     height: 18px;
+    accent-color: var(--primary);
 }
 
 /* ============================================
@@ -1165,7 +1222,7 @@ input, select, textarea {
    Utility
    ============================================ */
 @keyframes valueUpdate {
-    0% { background-color: rgba(33, 150, 243, 0.2); }
+    0% { background-color: rgba(0,188,212,0.3); }
     100% { background-color: transparent; }
 }
 
@@ -1222,8 +1279,9 @@ input, select, textarea {
    ============================================ */
 @media (prefers-contrast: high) {
     :root {
-        --border: #000;
-        --text-secondary: #000;
+        --border: #888;
+        --text-secondary: #ccc;
+        --text-muted: #999;
     }
 
     .stepper-row {
@@ -1268,5 +1326,10 @@ input, select, textarea {
 
     .chart-container {
         height: 300px;
+    }
+
+    body {
+        background: white;
+        color: black;
     }
 }

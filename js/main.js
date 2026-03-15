@@ -1,5 +1,5 @@
 /**
- * Main Application Controller for Propofol TCI TIVA V2.0.0
+ * Main Application Controller for Propofol TCI TIVA V2.1.0
  * Seamless 3-step workflow: Induction -> Protocol -> Monitoring
  * Based on Eleveld et al. (2018) BJA PK/PD model
  */
@@ -42,7 +42,7 @@ class MainApplicationController {
     }
 
     initialize() {
-        console.log('Initializing Propofol TCI TIVA V2.0.0');
+        console.log('Initializing Propofol TCI TIVA V2.1.0');
 
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');
@@ -648,7 +648,7 @@ class MainApplicationController {
                     {
                         label: 'Cp',
                         data: chartData.plasmaConcentrations,
-                        borderColor: '#2196F3',
+                        borderColor: '#29B6F6',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
@@ -660,13 +660,13 @@ class MainApplicationController {
                     {
                         label: 'Target',
                         data: chartData.targetLine,
-                        borderColor: 'rgba(244,67,54,0.7)',
+                        borderColor: 'rgba(244,67,54,0.8)',
                         borderDash: [5, 5], tension: 0, pointRadius: 0, borderWidth: 1.5, fill: false
                     },
                     {
                         label: 'Rate',
                         data: chartData.infusionRates,
-                        borderColor: '#7b1fa2',
+                        borderColor: '#CE93D8',
                         tension: 0.1, pointRadius: 0, borderWidth: 1.5, fill: false,
                         yAxisID: 'y1'
                     }
@@ -680,16 +680,19 @@ class MainApplicationController {
                     tooltip: {
                         events: ['click', 'touchstart'],
                         padding: 10, cornerRadius: 8,
-                        titleFont: { size: 12 }, bodyFont: { size: 11 }
+                        titleFont: { size: 12 }, bodyFont: { size: 11 },
+                        backgroundColor: '#333', titleColor: '#fff', bodyColor: '#e0e0e0',
+                        borderColor: '#4a4a4a', borderWidth: 1
                     },
-                    legend: { display: true, labels: { boxWidth: 12, font: { size: 11 } } }
+                    legend: { display: true, labels: { boxWidth: 12, font: { size: 11 }, color: '#a0a0a0' } }
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 } } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 } } },
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#a0a0a0' }, ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
                     y1: {
                         type: 'linear', display: true, position: 'right', beginAtZero: true,
-                        title: { display: true, text: 'Rate (mg/hr)', font: { size: 10 } },
+                        title: { display: true, text: 'Rate (mg/hr)', font: { size: 10 }, color: '#a0a0a0' },
+                        ticks: { color: '#a0a0a0' },
                         grid: { drawOnChartArea: false }
                     }
                 }
@@ -904,7 +907,7 @@ class MainApplicationController {
                     {
                         label: 'Cp',
                         data: chartData.plasmaData,
-                        borderColor: '#2196F3',
+                        borderColor: '#29B6F6',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
@@ -923,13 +926,15 @@ class MainApplicationController {
                     tooltip: {
                         events: ['click', 'touchstart'],
                         padding: 10, cornerRadius: 8,
-                        titleFont: { size: 12 }, bodyFont: { size: 11 }
+                        titleFont: { size: 12 }, bodyFont: { size: 11 },
+                        backgroundColor: '#333', titleColor: '#fff', bodyColor: '#e0e0e0',
+                        borderColor: '#4a4a4a', borderWidth: 1
                     },
-                    legend: { labels: { boxWidth: 12, font: { size: 11 } } }
+                    legend: { labels: { boxWidth: 12, font: { size: 11 }, color: '#a0a0a0' } }
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 } } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 } } }
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#a0a0a0' }, ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } }
                 }
             }
         });
