@@ -112,7 +112,7 @@ const ValidationLimits = {
         minimumBolus: 0.0,
         maximumBolus: 1000.0,  // Higher for propofol
         minimumContinuous: 0.0,
-        maximumContinuous: 500.0,  // mg/hr for propofol
+        maximumContinuous: 2000.0,  // mg/hr for propofol (protocol optimization may exceed 500)
         minimumTargetConcentration: 0.1,
         maximumTargetConcentration: 10.0  // Higher for propofol
     },
@@ -263,7 +263,7 @@ class DoseEvent {
         }
         
         if (this.continuousMgHr < ValidationLimits.Dosing.minimumContinuous || this.continuousMgHr > ValidationLimits.Dosing.maximumContinuous) {
-            errors.push("Continuous infusion rate must be between 0 mg/hr and 500 mg/hr");
+            errors.push("Continuous infusion rate must be between 0 mg/hr and 2000 mg/hr");
         }
         
         return {

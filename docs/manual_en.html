@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propofol TCI TIVA V2.1 User Manual</title>
+    <style>
+        /* ============================================ */
+        /* Base Styles                                  */
+        /* ============================================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #222222;
+            --bg-card: #2a2a2a;
+            --bg-code: #333333;
+            --accent: #00BCD4;
+            --accent-dim: #00838f;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --text-heading: #ffffff;
+            --border: #3a3a3a;
+            --warning-bg: #3a2a00;
+            --warning-border: #d4a000;
+            --warning-text: #ffd54f;
+            --tip-bg: #002a2e;
+            --tip-border: #00838f;
+            --danger-bg: #3a1010;
+            --danger-border: #c62828;
+            --danger-text: #ef9a9a;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ============================================ */
+        /* Layout                                       */
+        /* ============================================ */
+        .manual-container {
+            max-width: 840px;
+            margin: 0 auto;
+            padding: 20px 24px 60px;
+        }
+
+        /* ============================================ */
+        /* Header                                       */
+        /* ============================================ */
+        .manual-header {
+            text-align: center;
+            padding: 40px 0 30px;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 40px;
+        }
+
+        .manual-header h1 {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin: 0 0 8px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .manual-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0 0 16px;
+        }
+
+        .manual-header .meta {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .manual-header .meta span {
+            display: inline-block;
+            margin: 0 8px;
+        }
+
+        .lang-switch {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 16px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .lang-switch:hover {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* ============================================ */
+        /* Table of Contents                            */
+        /* ============================================ */
+        .toc {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            color: var(--text-heading);
+            font-size: 1.2rem;
+            margin: 0 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toc ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+        }
+
+        .toc a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .toc ol ol {
+            margin-top: 6px;
+            padding-left: 18px;
+        }
+
+        .toc ol ol li {
+            margin-bottom: 4px;
+            font-size: 0.93rem;
+        }
+
+        /* ============================================ */
+        /* Sections and Headings                        */
+        /* ============================================ */
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin: 0 0 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--accent-dim);
+        }
+
+        h3 {
+            color: var(--text-heading);
+            font-size: 1.15rem;
+            margin: 28px 0 12px;
+        }
+
+        h4 {
+            color: var(--accent);
+            font-size: 1rem;
+            margin: 20px 0 8px;
+        }
+
+        p {
+            margin: 0 0 14px;
+        }
+
+        /* ============================================ */
+        /* Screenshots                                  */
+        /* ============================================ */
+        .screenshot {
+            display: block;
+            max-width: 300px;
+            margin: 20px auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .screenshot-caption {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        /* ============================================ */
+        /* Callout Boxes                                */
+        /* ============================================ */
+        .callout {
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 0.93rem;
+        }
+
+        .callout-warning {
+            background-color: var(--warning-bg);
+            border-left: 4px solid var(--warning-border);
+            color: var(--warning-text);
+        }
+
+        .callout-tip {
+            background-color: var(--tip-bg);
+            border-left: 4px solid var(--tip-border);
+            color: var(--accent);
+        }
+
+        .callout-danger {
+            background-color: var(--danger-bg);
+            border-left: 4px solid var(--danger-border);
+            color: var(--danger-text);
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ============================================ */
+        /* Lists                                        */
+        /* ============================================ */
+        ul, ol {
+            padding-left: 22px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* ============================================ */
+        /* Procedure Steps                              */
+        /* ============================================ */
+        .procedure {
+            counter-reset: proc-step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .procedure li {
+            counter-increment: proc-step;
+            padding: 10px 14px 10px 48px;
+            position: relative;
+            margin-bottom: 10px;
+            background-color: var(--bg-secondary);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-dim);
+        }
+
+        .procedure li::before {
+            content: counter(proc-step);
+            position: absolute;
+            left: 14px;
+            top: 10px;
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* ============================================ */
+        /* Tables                                       */
+        /* ============================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.93rem;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--bg-card);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        td {
+            background-color: var(--bg-secondary);
+        }
+
+        /* ============================================ */
+        /* Inline Code and Keyboard Keys                */
+        /* ============================================ */
+        code {
+            background-color: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+
+        kbd {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.85em;
+            font-family: inherit;
+            color: var(--text-heading);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* ============================================ */
+        /* Footer                                       */
+        /* ============================================ */
+        .manual-footer {
+            text-align: center;
+            padding: 30px 0 0;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .manual-footer p {
+            margin: 4px 0;
+        }
+
+        /* ============================================ */
+        /* Responsive                                   */
+        /* ============================================ */
+        @media (max-width: 600px) {
+            .manual-container {
+                padding: 12px 16px 40px;
+            }
+
+            .manual-header h1 {
+                font-size: 1.4rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            .toc {
+                padding: 16px 18px;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .procedure li {
+                padding-left: 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="manual-container">
+
+    <!-- ============================================ -->
+    <!-- HEADER                                       -->
+    <!-- ============================================ -->
+    <header class="manual-header">
+        <h1>Propofol TCI TIVA V2.1 User Manual</h1>
+        <p class="subtitle">Propofol Target Controlled Infusion Simulator</p>
+        <div class="meta">
+            <span>Developer: YASUYUKI SUZUKI</span><br>
+            <span style="font-size:0.85em;">Saiseikai Matsuyama Hospital, Dept. of Anaesthesiology / Ehime University Graduate School of Medicine, Dept. of Pharmacology</span>
+        </div>
+        <div class="meta">
+            <span>PK Model: Eleveld et al. (2018) BJA</span>
+        </div>
+        <a href="manual_ja.html" class="lang-switch">&#26085;&#26412;&#35486;&#29256;</a>
+    </header>
+
+    <!-- ============================================ -->
+    <!-- TABLE OF CONTENTS                            -->
+    <!-- ============================================ -->
+    <nav class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#getting-started">Getting Started</a>
+                <ol>
+                    <li><a href="#installation">Installation (PWA)</a></li>
+                    <li><a href="#disclaimer">Disclaimer Screen</a></li>
+                    <li><a href="#patient-settings">Patient Settings</a></li>
+                </ol>
+            </li>
+            <li><a href="#step1">Step 1: Induction -- Real-time Prediction</a>
+                <ol>
+                    <li><a href="#step1-setup">Setting Bolus and Continuous Rate</a></li>
+                    <li><a href="#step1-running">Running the Prediction</a></li>
+                    <li><a href="#step1-loc">Recording LOC (Loss of Consciousness)</a></li>
+                </ol>
+            </li>
+            <li><a href="#step2">Step 2: Protocol -- Step-down Optimization</a>
+                <ol>
+                    <li><a href="#step2-margin">Safety Margin and Target Ce</a></li>
+                    <li><a href="#step2-params">Protocol Parameters</a></li>
+                    <li><a href="#step2-advanced">Advanced Settings</a></li>
+                    <li><a href="#step2-results">Optimization Results</a></li>
+                </ol>
+            </li>
+            <li><a href="#step3">Step 3: Monitoring -- Actual Dose Tracking</a>
+                <ol>
+                    <li><a href="#step3-events">Adding Dose Events</a></li>
+                    <li><a href="#step3-simulation">Running the Simulation</a></li>
+                    <li><a href="#step3-export">CSV Export</a></li>
+                </ol>
+            </li>
+            <li><a href="#units">Units Reference</a></li>
+            <li><a href="#tips">Tips and Best Practices</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+            <li><a href="#disclaimer-full">Disclaimer and Terms of Use</a></li>
+        </ol>
+    </nav>
+
+    <!-- ============================================ -->
+    <!-- 1. OVERVIEW                                  -->
+    <!-- ============================================ -->
+    <section id="overview">
+        <h2>1. Overview</h2>
+        <p>
+            Propofol TCI TIVA is a pharmacokinetic simulation tool designed for educational and research use. It predicts plasma concentration (Cp) and effect-site concentration (Ce) of propofol based on the three-compartment pharmacokinetic/pharmacodynamic model published by Eleveld et al. (2018) in the British Journal of Anaesthesia.
+        </p>
+        <p>
+            The application follows a seamless three-step workflow:
+        </p>
+        <ol>
+            <li><strong>Induction</strong> -- Real-time prediction of plasma and effect-site concentrations during anesthesia induction. The user records the moment of loss of consciousness (LOC) to capture the LOC Ce value.</li>
+            <li><strong>Protocol</strong> -- Automated step-down protocol optimization that calculates an optimal continuous infusion rate to maintain a target effect-site concentration derived from the LOC Ce plus a safety margin.</li>
+            <li><strong>Monitoring</strong> -- Entry of actual administered doses (bolus and continuous rate changes) with simulation of the resulting concentration-time curves. Supports CSV data export.</li>
+        </ol>
+        <p>
+            Data flows automatically between steps: the LOC Ce recorded in Step 1 transfers to Step 2, and the optimized protocol from Step 2 pre-populates dose events in Step 3.
+        </p>
+
+        <div class="callout callout-danger">
+            <strong>Not for Clinical Use</strong>
+            This application is strictly for educational and research purposes. It must not be used as a basis for clinical diagnosis or treatment decisions. All clinical decisions must be made under the responsibility of qualified medical professionals. Calculation results are theoretical values.
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 2. GETTING STARTED                           -->
+    <!-- ============================================ -->
+    <section id="getting-started">
+        <h2>2. Getting Started</h2>
+
+        <h3 id="installation">2.1 Installation (PWA)</h3>
+        <p>
+            The application is a Progressive Web App (PWA). Once loaded in a browser, it can be installed to your home screen and used offline. This is particularly useful for iPhone and iPad users in environments without reliable network access.
+        </p>
+        <p>To install on iPhone / iPad (Safari):</p>
+        <ol class="procedure">
+            <li>Open the application URL in Safari.</li>
+            <li>Tap the Share button (square with upward arrow) in the browser toolbar.</li>
+            <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+            <li>Tap <strong>Add</strong> to confirm. The app icon will appear on your home screen.</li>
+        </ol>
+        <p>
+            After installation, the app launches in full-screen mode without browser navigation bars and works entirely offline.
+        </p>
+
+        <h3 id="disclaimer">2.2 Disclaimer Screen</h3>
+        <p>
+            When the application starts, a disclaimer modal is displayed. You must read and accept the terms before proceeding.
+        </p>
+        <img src="images/01_disclaimer.png" alt="Disclaimer modal showing important notice about educational and research use only" class="screenshot">
+        <p class="screenshot-caption">Figure 1: Disclaimer / Important Notice modal</p>
+        <p>
+            Tap <kbd>Accept and Start</kbd> to proceed to the main application.
+        </p>
+
+        <h3 id="patient-settings">2.3 Patient Settings</h3>
+        <p>
+            Patient parameters directly affect pharmacokinetic calculations. To configure patient information, tap the patient summary button (showing age and weight, e.g., "35y 70kg") in the upper-right corner of the header.
+        </p>
+        <img src="images/05_patient_modal.png" alt="Patient Information modal with fields for ID, Age, Weight, Height, BMI, Sex, ASA-PS, Opioid Co-administration, and Anesthesia Start Time" class="screenshot">
+        <p class="screenshot-caption">Figure 2: Patient Information modal</p>
+
+        <p>The following parameters can be configured:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Range</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Patient ID</td>
+                    <td>Free text</td>
+                    <td>Auto-generated</td>
+                    <td>Identifier for record keeping</td>
+                </tr>
+                <tr>
+                    <td>Age</td>
+                    <td>18 -- 100</td>
+                    <td>35</td>
+                    <td>Patient age in years</td>
+                </tr>
+                <tr>
+                    <td>Weight</td>
+                    <td>30 -- 200 kg</td>
+                    <td>70 kg</td>
+                    <td>Body weight</td>
+                </tr>
+                <tr>
+                    <td>Height</td>
+                    <td>120 -- 220 cm</td>
+                    <td>170 cm</td>
+                    <td>Height (BMI is calculated automatically)</td>
+                </tr>
+                <tr>
+                    <td>Sex</td>
+                    <td>Male / Female</td>
+                    <td>Male</td>
+                    <td>Biological sex</td>
+                </tr>
+                <tr>
+                    <td>ASA-PS</td>
+                    <td>I-II / III-IV</td>
+                    <td>I-II</td>
+                    <td>ASA Physical Status classification</td>
+                </tr>
+                <tr>
+                    <td>Opioid Co-administration</td>
+                    <td>Yes / No</td>
+                    <td>Yes</td>
+                    <td>Whether opioids are administered concurrently (affects PK/PD model parameters)</td>
+                </tr>
+                <tr>
+                    <td>Anesthesia Start</td>
+                    <td>HH:MM</td>
+                    <td>08:00</td>
+                    <td>Start time used for dose event timestamps</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout callout-tip">
+            <strong>Tip</strong>
+            Set patient parameters before starting Step 1. Changing parameters after running simulations may require re-running calculations for accurate results. The Eleveld model uses opioid co-administration status to adjust pharmacodynamic parameters, so ensure this setting reflects the clinical scenario.
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 3. STEP 1: INDUCTION                         -->
+    <!-- ============================================ -->
+    <section id="step1">
+        <h2>3. Step 1: Induction -- Real-time Prediction</h2>
+        <p>
+            Step 1 simulates real-time pharmacokinetic prediction during anesthesia induction. It models the concentration-time profile after a bolus injection with concurrent continuous infusion, updating the display every second.
+        </p>
+
+        <img src="images/02_step1_initial.png" alt="Step 1 initial state showing bolus and continuous rate controls, concentration display, and empty chart" class="screenshot">
+        <p class="screenshot-caption">Figure 3: Step 1 initial state</p>
+
+        <h3 id="step1-setup">3.1 Setting Bolus and Continuous Rate</h3>
+        <p>Before starting the real-time simulation, set the initial dosing parameters:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Unit</th>
+                    <th>Range</th>
+                    <th>Default</th>
+                    <th>Step</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bolus</td>
+                    <td>mg</td>
+                    <td>10 -- 200</td>
+                    <td>140</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Continuous</td>
+                    <td>mg/hr</td>
+                    <td>0 -- 500</td>
+                    <td>200</td>
+                    <td>10</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Use the <kbd>-</kbd> and <kbd>+</kbd> stepper buttons to adjust values, or tap the number field to enter a value directly.
+        </p>
+
+        <div class="callout callout-warning">
+            <strong>Note on Units</strong>
+            The continuous infusion rate for propofol is expressed in <strong>mg/hr</strong> (total dose per hour), not mg/kg/hr. This differs from some other TCI applications that use weight-based dosing.
+        </div>
+
+        <h3 id="step1-running">3.2 Running the Prediction</h3>
+        <ol class="procedure">
+            <li>Tap <kbd>Start</kbd> to begin the real-time simulation. The timer starts and concentration values update every second.</li>
+            <li>Observe the three concentration display cards: <strong>Plasma Cp</strong> (left), <strong>Effect-site Ce</strong> (center, highlighted in cyan), and <strong>Elapsed time</strong> (right).</li>
+            <li>The real-time chart plots both Cp (blue line) and Ce (green line) against elapsed time.</li>
+            <li>Use the <kbd>Record</kbd> button to save a snapshot of the current concentrations at any point.</li>
+            <li>Tap <kbd>Stop</kbd> to pause the simulation.</li>
+        </ol>
+
+        <img src="images/03_step1_running.png" alt="Step 1 running with real-time chart showing Cp and Ce curves, Stop/Record/LOC buttons visible" class="screenshot">
+        <p class="screenshot-caption">Figure 4: Step 1 running with real-time concentration chart</p>
+
+        <h3 id="step1-loc">3.3 Recording LOC (Loss of Consciousness)</h3>
+        <p>
+            The LOC Ce value is a critical measurement that defines the effect-site concentration at the moment the patient loses consciousness. This value is used in Step 2 to calculate the target maintenance concentration.
+        </p>
+        <ol class="procedure">
+            <li>While the simulation is running, observe the patient for signs of loss of consciousness.</li>
+            <li>At the moment of LOC, tap the <kbd>LOC</kbd> button. The current Ce value is recorded as the LOC Ce.</li>
+            <li>The LOC Ce value appears in a prominent yellow-green display card labeled "LOC Ce (Sleep Onset)".</li>
+            <li>A record entry is also saved automatically in the Records section below the chart.</li>
+        </ol>
+
+        <img src="images/04_step1_loc_recorded.png" alt="Step 1 after LOC recorded, showing LOC Ce value in a prominent display, with the record saved" class="screenshot">
+        <p class="screenshot-caption">Figure 5: Step 1 after LOC Ce recorded</p>
+
+        <p>
+            After recording the LOC Ce value, tap <kbd>Proceed to Protocol</kbd> at the bottom of the screen to advance to Step 2. The LOC Ce value transfers automatically.
+        </p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 4. STEP 2: PROTOCOL                          -->
+    <!-- ============================================ -->
+    <section id="step2">
+        <h2>4. Step 2: Protocol -- Step-down Optimization</h2>
+        <p>
+            Step 2 calculates an optimized step-down infusion protocol. Starting from the initial bolus and continuous rate, the algorithm progressively reduces the infusion rate over time while maintaining the effect-site concentration at or above the target level.
+        </p>
+
+        <img src="images/06_step2_initial.png" alt="Step 2 showing LOC Ce transferred from Step 1, safety margin setting, and target Ce calculation" class="screenshot">
+        <p class="screenshot-caption">Figure 6: Step 2 with LOC Ce transferred from Induction</p>
+
+        <h3 id="step2-margin">4.1 Safety Margin and Target Ce</h3>
+        <p>
+            If a LOC Ce was recorded in Step 1, a cyan banner at the top of Step 2 displays the transferred value (e.g., "LOC Ce from Induction: 3.0 &mu;g/mL").
+        </p>
+        <p>The target effect-site concentration is calculated as:</p>
+        <p style="text-align: center; font-size: 1.1rem; color: var(--text-heading); padding: 10px 0;">
+            <strong>Target Ce = LOC Ce + Safety Margin</strong>
+        </p>
+        <p>
+            The safety margin is adjustable in increments of 0.1 &mu;g/mL (default: 1.5 &mu;g/mL). For example, with a LOC Ce of 3.0 and a margin of 1.5, the Target Ce becomes 4.5 &mu;g/mL. This ensures a sufficient buffer above the consciousness threshold to reduce the risk of intraoperative awareness.
+        </p>
+
+        <h3 id="step2-params">4.2 Protocol Parameters</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Unit</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Target Ce</td>
+                    <td>&mu;g/mL</td>
+                    <td>~3.0 (or calculated from LOC Ce)</td>
+                    <td>Desired steady-state effect-site concentration</td>
+                </tr>
+                <tr>
+                    <td>Bolus</td>
+                    <td>mg</td>
+                    <td>140</td>
+                    <td>Initial bolus dose for the protocol</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 id="step2-advanced">4.3 Advanced Settings</h3>
+        <p>
+            Tap <strong>Advanced Settings</strong> to expand additional optimization parameters:
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Default</th>
+                    <th>Range</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reach Time</td>
+                    <td>20 min</td>
+                    <td>10 -- 60 min</td>
+                    <td>Time window for the protocol to reach the target Ce</td>
+                </tr>
+                <tr>
+                    <td>Upper Threshold</td>
+                    <td>120%</td>
+                    <td>105 -- 130%</td>
+                    <td>Maximum allowed Ce as a percentage of the target (triggers rate reduction)</td>
+                </tr>
+                <tr>
+                    <td>Reduction Factor</td>
+                    <td>70%</td>
+                    <td>50 -- 90%</td>
+                    <td>Percentage to reduce the infusion rate by at each step-down</td>
+                </tr>
+                <tr>
+                    <td>Adj. Interval</td>
+                    <td>5 min</td>
+                    <td>3 -- 10 min</td>
+                    <td>Minimum time between rate adjustments</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 id="step2-results">4.4 Optimization Results</h3>
+        <p>
+            Tap <kbd>Execute Optimization</kbd> to run the algorithm. The results section displays six metrics:
+        </p>
+        <ul>
+            <li><strong>Optimal Rate</strong> -- The final steady-state continuous infusion rate (mg/hr)</li>
+            <li><strong>Final Ce</strong> -- The predicted effect-site concentration at the end of the simulation window (&mu;g/mL)</li>
+            <li><strong>Accuracy</strong> -- Percentage deviation from the target Ce</li>
+            <li><strong>Adjustments</strong> -- Number of step-down rate changes performed</li>
+            <li><strong>Stability</strong> -- Stability index (out of 100)</li>
+            <li><strong>Convergence</strong> -- Time in minutes for the Ce to converge to the target range</li>
+        </ul>
+
+        <img src="images/07_step2_results.png" alt="Step 2 optimization results showing Optimal Rate, Final Ce, Accuracy, Adjustments, Stability, and Convergence metrics" class="screenshot">
+        <p class="screenshot-caption">Figure 7: Step 2 optimization results</p>
+
+        <img src="images/08_step2_chart.png" alt="Step 2 protocol chart showing Cp and Ce curves with target line and rate change indicators" class="screenshot">
+        <p class="screenshot-caption">Figure 8: Step 2 protocol concentration chart</p>
+
+        <p>
+            Below the chart, expand <strong>Dosing Schedule</strong> to view a detailed table of all rate changes with their timestamps and infusion rates.
+        </p>
+
+        <p>
+            Tap <kbd>Monitoring</kbd> at the bottom-right to transfer the optimized protocol to Step 3. The protocol data (bolus dose and step-down schedule) is automatically loaded as dose events.
+        </p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 5. STEP 3: MONITORING                        -->
+    <!-- ============================================ -->
+    <section id="step3">
+        <h2>5. Step 3: Monitoring -- Actual Dose Tracking</h2>
+        <p>
+            Step 3 allows you to enter the actual doses administered during a procedure and simulate the resulting concentration-time profiles. If protocol data was transferred from Step 2, the dose events are pre-populated.
+        </p>
+
+        <img src="images/09_step3_initial.png" alt="Step 3 showing transferred protocol data with pre-populated dose events" class="screenshot">
+        <p class="screenshot-caption">Figure 9: Step 3 with protocol data transferred from Step 2</p>
+
+        <h3 id="step3-events">5.1 Adding Dose Events</h3>
+        <p>
+            Each dose event represents a point in time when the dosing changed. An event consists of a timestamp, an optional bolus amount, and/or a continuous infusion rate.
+        </p>
+        <ol class="procedure">
+            <li>Tap <kbd>+ Add</kbd> in the Dose Events section header.</li>
+            <li>In the modal, set the <strong>Time</strong> (HH:MM format, relative to the anesthesia start time shown below the field).</li>
+            <li>Enter a <strong>Bolus</strong> amount in mg (set to 0 if no bolus is given at this time point).</li>
+            <li>Enter the <strong>Continuous</strong> infusion rate in mg/hr.</li>
+            <li>Tap <kbd>Add</kbd> to save the dose event.</li>
+        </ol>
+
+        <p>
+            Pre-populated events from Step 2 appear in the event list with their time offsets (e.g., "0 min (08:00)", "15 min (08:15)"). Each event shows its bolus and continuous rate, with a red delete button on the right to remove individual entries.
+        </p>
+
+        <h3 id="step3-simulation">5.2 Running the Simulation</h3>
+        <ol class="procedure">
+            <li>After entering or confirming all dose events, tap <kbd>Run Simulation</kbd>.</li>
+            <li>The results section displays three summary cards: <strong>Max Cp</strong>, <strong>Max Ce</strong>, and <strong>Min BIS</strong> (the predicted minimum Bispectral Index value).</li>
+            <li>The concentration chart plots the full Cp and Ce time curves based on the entered dose events.</li>
+        </ol>
+
+        <img src="images/10_step3_results.png" alt="Step 3 simulation results showing Max Cp, Max Ce, and Min BIS values" class="screenshot">
+        <p class="screenshot-caption">Figure 10: Step 3 simulation results with concentration summary</p>
+
+        <img src="images/11_step3_chart.png" alt="Step 3 monitoring chart showing full concentration-time curves" class="screenshot">
+        <p class="screenshot-caption">Figure 11: Step 3 monitoring concentration chart</p>
+
+        <h3 id="step3-export">5.3 CSV Export</h3>
+        <p>
+            Tap <kbd>Export CSV</kbd> to download the simulation data as a CSV file. The export includes timestamped concentration values (Cp and Ce) along with the dose event data, suitable for further analysis in spreadsheet software or statistical tools.
+        </p>
+
+        <div class="callout callout-tip">
+            <strong>Tip</strong>
+            On iOS, the CSV file can be saved to the Files app or shared directly via AirDrop, email, or other share sheet options.
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 6. UNITS REFERENCE                           -->
+    <!-- ============================================ -->
+    <section id="units">
+        <h2>6. Units Reference</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Measurement</th>
+                    <th>Unit</th>
+                    <th>Context</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bolus dose</td>
+                    <td>mg</td>
+                    <td>Total bolus amount (not weight-based)</td>
+                </tr>
+                <tr>
+                    <td>Continuous infusion rate</td>
+                    <td>mg/hr</td>
+                    <td>Total dose per hour (not weight-based); differs from some TCI systems that use mg/kg/hr</td>
+                </tr>
+                <tr>
+                    <td>Plasma concentration (Cp)</td>
+                    <td>&mu;g/mL</td>
+                    <td>Predicted plasma compartment concentration</td>
+                </tr>
+                <tr>
+                    <td>Effect-site concentration (Ce)</td>
+                    <td>&mu;g/mL</td>
+                    <td>Predicted effect-site (biophase) concentration</td>
+                </tr>
+                <tr>
+                    <td>Time</td>
+                    <td>minutes / HH:MM</td>
+                    <td>Elapsed time or clock time from anesthesia start</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 7. TIPS AND BEST PRACTICES                   -->
+    <!-- ============================================ -->
+    <section id="tips">
+        <h2>7. Tips and Best Practices</h2>
+
+        <h3>Workflow Sequence</h3>
+        <p>
+            The three-step workflow is designed to be followed in order. While you can navigate between steps using the step tabs at the top, the intended flow is: Induction, then Protocol, then Monitoring. Data transfers only in the forward direction.
+        </p>
+
+        <h3>Patient Parameters</h3>
+        <ul>
+            <li>Always set patient parameters before starting any simulation. The Eleveld PK/PD model calculations depend on age, weight, height, sex, ASA-PS, and opioid co-administration status.</li>
+            <li>BMI is calculated automatically from weight and height and displayed in the patient modal.</li>
+            <li>The patient summary in the header (e.g., "35y 70kg") provides a quick confirmation of the active patient profile.</li>
+            <li>The opioid co-administration setting affects the pharmacodynamic (Ce50) parameters of the Eleveld model. Set this to "Yes" if opioids (e.g., remifentanil, fentanyl) are being co-administered.</li>
+        </ul>
+
+        <h3>LOC Ce Recording</h3>
+        <ul>
+            <li>Tap the LOC button at the exact moment of observed loss of consciousness for the most accurate Ce value.</li>
+            <li>The LOC Ce is the foundation for Step 2 target concentration calculation. An accurate LOC reading improves protocol optimization.</li>
+            <li>If you need to re-record the LOC, stop the simulation, reset, and start again.</li>
+            <li>Typical LOC Ce values for propofol range from approximately 2 to 5 &mu;g/mL depending on patient characteristics and concurrent medications.</li>
+        </ul>
+
+        <h3>Safety Margin Selection</h3>
+        <ul>
+            <li>The default safety margin of 1.5 &mu;g/mL adds a buffer above the LOC Ce to reduce the risk of awareness.</li>
+            <li>Adjust the margin based on clinical context: higher margins provide a greater safety buffer; lower margins reduce total drug exposure.</li>
+        </ul>
+
+        <h3>Offline Use</h3>
+        <ul>
+            <li>After installing as a PWA, the app works fully offline. No network connection is needed during use.</li>
+            <li>CSV export saves files locally to the device.</li>
+        </ul>
+
+        <h3>Screen Orientation</h3>
+        <p>
+            The app is optimized for portrait orientation on iPhone. Charts and controls are designed for single-hand operation on mobile devices.
+        </p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 8. TROUBLESHOOTING                           -->
+    <!-- ============================================ -->
+    <section id="troubleshooting">
+        <h2>8. Troubleshooting</h2>
+
+        <h4>The app does not load or shows a blank screen</h4>
+        <p>
+            Ensure you are using a supported browser (Safari on iOS, Chrome or Edge on desktop). Clear the browser cache and reload the page. If using the PWA, try removing and reinstalling the app.
+        </p>
+
+        <h4>LOC Ce is not transferred to Step 2</h4>
+        <p>
+            Confirm that the LOC button was pressed during Step 1 and the LOC Ce value is displayed in the green card. Navigate to Step 2 using the "Proceed to Protocol" button rather than directly tapping the Step 2 tab.
+        </p>
+
+        <h4>Protocol data is not transferred to Step 3</h4>
+        <p>
+            Ensure that you have executed the optimization in Step 2 and results are displayed before navigating to Step 3. Use the "Monitoring" button at the bottom of Step 2 for the transfer.
+        </p>
+
+        <h4>Concentration values seem incorrect</h4>
+        <p>
+            Verify that patient parameters (especially weight, age, and opioid co-administration status) are correctly set. The Eleveld PK/PD model is sensitive to patient demographics. Also confirm the units: bolus is in mg (total dose), while continuous rate is in mg/hr (total dose per hour, not weight-based).
+        </p>
+
+        <h4>CSV export does not work</h4>
+        <p>
+            On iOS, the file download behavior may differ depending on the browser. In Safari, the file may open in a new tab or prompt a save dialog. Try using the Share sheet to save to the Files app.
+        </p>
+
+        <h4>Diagnostics button</h4>
+        <p>
+            The gear icon in the upper-right corner of the header opens an error diagnostics panel. This is primarily for development and debugging purposes. If you encounter unexpected behavior, the diagnostics panel may provide error details useful for reporting issues.
+        </p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 9. DISCLAIMER                                -->
+    <!-- ============================================ -->
+    <section id="disclaimer-full">
+        <h2>9. Disclaimer and Terms of Use</h2>
+
+        <div class="callout callout-danger">
+            <strong>Important</strong>
+            Please read the following terms carefully before using this application.
+        </div>
+
+        <ul>
+            <li>This application is <strong>for educational and research purposes only</strong>.</li>
+            <li>It must <strong>not</strong> be used as a basis for clinical diagnosis or treatment decisions.</li>
+            <li>All clinical decisions must be made under the responsibility of qualified medical professionals.</li>
+            <li>Calculation results are theoretical values derived from a pharmacokinetic model. Individual patient responses may vary significantly from model predictions.</li>
+            <li>The pharmacokinetic model is based on: Eleveld DJ, et al. Pharmacokinetic-pharmacodynamic model for propofol for broad application in anaesthesia and sedation. British Journal of Anaesthesia. 2018;120(5):942-959.</li>
+            <li>The developer assumes no liability for any outcomes resulting from the use of this application.</li>
+        </ul>
+
+        <p>
+            By using this application, you acknowledge and accept these terms.
+        </p>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
+    <footer class="manual-footer">
+        <p>Propofol TCI TIVA V2.1 User Manual</p>
+        <p>Developed by YASUYUKI SUZUKI -- Saiseikai Matsuyama Hospital, Dept. of Anaesthesiology / Ehime University Graduate School of Medicine, Dept. of Pharmacology</p>
+        <p>Based on Eleveld et al. (2018) BJA PK/PD model</p>
+        <p style="margin-top: 12px;">For educational and research purposes only.</p>
+    </footer>
+
+</div>
+
+</body>
+</html>

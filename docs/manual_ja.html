@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propofol TCI TIVA V2.1 取扱説明書</title>
+    <style>
+        /* ============================
+           Base / Reset
+           ============================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.8;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* ============================
+           Layout
+           ============================ */
+        .page-wrapper {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.25rem 4rem;
+        }
+
+        /* ============================
+           Header
+           ============================ */
+        .doc-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d2b30 100%);
+            border-bottom: 2px solid #00BCD4;
+            padding: 2.5rem 1.25rem 2rem;
+            margin: 0 -1.25rem 2rem;
+            text-align: center;
+        }
+
+        .doc-header h1 {
+            font-size: 1.6rem;
+            color: #00BCD4;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-header .subtitle {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .lang-switch {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.35rem 1rem;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .lang-switch:hover {
+            border-color: #00BCD4;
+            color: #00BCD4;
+        }
+
+        /* ============================
+           Table of Contents
+           ============================ */
+        .toc {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .toc h2 {
+            font-size: 1.1rem;
+            color: #00BCD4;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+
+        .toc > ol > li {
+            counter-increment: toc-counter;
+            margin-bottom: 0.4rem;
+        }
+
+        .toc > ol > li > a::before {
+            content: counter(toc-counter) ". ";
+            color: #00BCD4;
+            font-weight: 600;
+        }
+
+        .toc a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: #00BCD4;
+        }
+
+        .toc ol ol {
+            margin-left: 1.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .toc ol ol li {
+            margin-bottom: 0.25rem;
+        }
+
+        .toc ol ol a {
+            font-size: 0.88rem;
+            color: #aaa;
+        }
+
+        /* ============================
+           Sections
+           ============================ */
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            color: #00BCD4;
+            border-left: 4px solid #00BCD4;
+            padding-left: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid #333;
+        }
+
+        h4 {
+            font-size: 1rem;
+            color: #b0b0b0;
+            margin-top: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 0.9rem;
+        }
+
+        /* ============================
+           Screenshots
+           ============================ */
+        .screenshot {
+            display: block;
+            max-width: 300px;
+            width: 100%;
+            margin: 1.25rem auto;
+            border: 1px solid #444;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .screenshot-caption {
+            text-align: center;
+            font-size: 0.82rem;
+            color: #888;
+            margin-top: -0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ============================
+           Lists
+           ============================ */
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        /* ============================
+           Tables
+           ============================ */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .param-table th,
+        .param-table td {
+            border: 1px solid #444;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+
+        .param-table th {
+            background-color: #1e2a2d;
+            color: #00BCD4;
+            font-weight: 600;
+        }
+
+        .param-table td {
+            background-color: #1a1a1a;
+        }
+
+        /* ============================
+           Info boxes
+           ============================ */
+        .info-box {
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+            font-size: 0.92rem;
+        }
+
+        .info-box-note {
+            background-color: #1a2a2d;
+            border-left: 4px solid #00BCD4;
+        }
+
+        .info-box-warning {
+            background-color: #2d2a1a;
+            border-left: 4px solid #FFC107;
+        }
+
+        .info-box-danger {
+            background-color: #2d1a1a;
+            border-left: 4px solid #f44336;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ============================
+           Code / Keyboard
+           ============================ */
+        code {
+            background-color: #2a2a2a;
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-size: 0.88em;
+            color: #00BCD4;
+            font-family: "SF Mono", "Menlo", monospace;
+        }
+
+        kbd {
+            display: inline-block;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 0.1em 0.5em;
+            font-size: 0.85em;
+            font-family: inherit;
+            color: #e0e0e0;
+            box-shadow: 0 1px 0 #555;
+        }
+
+        /* ============================
+           Step indicators
+           ============================ */
+        .step-badge {
+            display: inline-block;
+            background-color: #00BCD4;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.15em 0.6em;
+            border-radius: 4px;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+        }
+
+        .workflow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            background-color: #1e1e1e;
+            border: 1px solid #00BCD4;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .workflow-step .num {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00BCD4;
+        }
+
+        .workflow-step .label {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .workflow-arrow {
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        /* ============================
+           Procedure steps
+           ============================ */
+        .procedure {
+            counter-reset: proc-step;
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .procedure > li {
+            counter-increment: proc-step;
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .procedure > li::before {
+            content: counter(proc-step);
+            position: absolute;
+            left: 0;
+            top: 0.1em;
+            width: 1.8rem;
+            height: 1.8rem;
+            background-color: #00BCD4;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        /* ============================
+           Footer
+           ============================ */
+        .doc-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #333;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #666;
+        }
+
+        .doc-footer p {
+            margin-bottom: 0.3rem;
+        }
+
+        /* ============================
+           Responsive
+           ============================ */
+        @media (max-width: 600px) {
+            .page-wrapper {
+                padding: 0 1rem 3rem;
+            }
+
+            .doc-header {
+                margin: 0 -1rem 1.5rem;
+                padding: 2rem 1rem 1.5rem;
+            }
+
+            .doc-header h1 {
+                font-size: 1.3rem;
+            }
+
+            h2 {
+                font-size: 1.15rem;
+            }
+
+            .toc {
+                padding: 1rem 1.25rem;
+            }
+
+            .param-table {
+                font-size: 0.82rem;
+            }
+
+            .param-table th,
+            .param-table td {
+                padding: 0.4rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <!-- ========================================
+         Header
+         ======================================== -->
+    <header class="doc-header">
+        <h1>Propofol TCI TIVA V2.1<br>取扱説明書</h1>
+        <p class="subtitle">プロポフォール目標制御注入シミュレータ</p>
+        <a href="manual_en.html" class="lang-switch">English Version</a>
+    </header>
+
+    <!-- ========================================
+         Table of Contents
+         ======================================== -->
+    <nav class="toc">
+        <h2>目次</h2>
+        <ol>
+            <li><a href="#overview">概要</a></li>
+            <li><a href="#getting-started">はじめに</a>
+                <ol>
+                    <li><a href="#install">インストールと起動</a></li>
+                    <li><a href="#disclaimer">免責事項の確認</a></li>
+                    <li><a href="#patient">患者情報の設定</a></li>
+                </ol>
+            </li>
+            <li><a href="#step1">Step 1: Induction -- リアルタイム導入予測</a>
+                <ol>
+                    <li><a href="#step1-params">投与設定</a></li>
+                    <li><a href="#step1-run">シミュレーション実行</a></li>
+                    <li><a href="#step1-loc">LOC Ce の記録</a></li>
+                </ol>
+            </li>
+            <li><a href="#step2">Step 2: Protocol -- ステップダウンプロトコル最適化</a>
+                <ol>
+                    <li><a href="#step2-margin">安全マージンの設定</a></li>
+                    <li><a href="#step2-optimize">最適化の実行</a></li>
+                    <li><a href="#step2-results">結果の解釈</a></li>
+                    <li><a href="#step2-advanced">詳細設定</a></li>
+                </ol>
+            </li>
+            <li><a href="#step3">Step 3: Monitoring -- 実投与量モニタリング</a>
+                <ol>
+                    <li><a href="#step3-events">投与イベントの入力</a></li>
+                    <li><a href="#step3-sim">シミュレーション実行</a></li>
+                    <li><a href="#step3-csv">CSV エクスポート</a></li>
+                </ol>
+            </li>
+            <li><a href="#workflow">ワークフロー全体の流れ</a></li>
+            <li><a href="#pk-model">薬物動態モデルについて</a></li>
+            <li><a href="#tips">使い方のヒント</a></li>
+            <li><a href="#troubleshooting">トラブルシューティング</a></li>
+            <li><a href="#disclaimer-section">免責事項</a></li>
+        </ol>
+    </nav>
+
+    <!-- ========================================
+         1. Overview
+         ======================================== -->
+    <section id="overview">
+        <h2>1. 概要</h2>
+        <p>
+            Propofol TCI TIVA は、静脈麻酔薬プロポフォールの Target Controlled Infusion（目標制御注入）をシミュレーションする教育・研究用 Web アプリケーションです。
+            Eleveld ら（2018年, British Journal of Anaesthesia）の薬物動態/薬力学（PK/PD）モデルに基づき、ボーラス投与および持続投与後の血漿中濃度（Cp）と効果部位濃度（Ce）をリアルタイムで予測します。
+        </p>
+
+        <p>本アプリケーションは 3 ステップのシームレスなワークフローで構成されています。</p>
+
+        <div class="workflow-diagram">
+            <div class="workflow-step">
+                <span class="num">1</span>
+                <span class="label">Induction</span>
+            </div>
+            <span class="workflow-arrow">&#9654;</span>
+            <div class="workflow-step">
+                <span class="num">2</span>
+                <span class="label">Protocol</span>
+            </div>
+            <span class="workflow-arrow">&#9654;</span>
+            <div class="workflow-step">
+                <span class="num">3</span>
+                <span class="label">Monitoring</span>
+            </div>
+        </div>
+
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>ステップ</th>
+                    <th>機能</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="step-badge">1</span> Induction</td>
+                    <td>導入時のボーラス投与・持続投与に対する血漿中/効果部位濃度のリアルタイム予測。LOC Ce（意識消失時の効果部位濃度）を記録</td>
+                </tr>
+                <tr>
+                    <td><span class="step-badge">2</span> Protocol</td>
+                    <td>目標濃度を維持するためのステップダウンプロトコルの最適化。LOC Ce に安全マージンを加えた Target Ce を自動計算</td>
+                </tr>
+                <tr>
+                    <td><span class="step-badge">3</span> Monitoring</td>
+                    <td>実際の投与スケジュールを入力し、濃度推移をシミュレーション。CSV エクスポートに対応</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>主な特徴</h3>
+        <ul>
+            <li>Eleveld et al. (2018) BJA の PK/PD モデルに準拠</li>
+            <li>PWA（Progressive Web App）対応 -- iPhone のホーム画面に追加してオフラインで使用可能</li>
+            <li>iPhone に最適化されたダークテーマ UI</li>
+            <li>各ステップ間でのデータ自動引き継ぎ</li>
+            <li>CSV 形式でのデータエクスポート</li>
+        </ul>
+    </section>
+
+    <!-- ========================================
+         2. Getting Started
+         ======================================== -->
+    <section id="getting-started">
+        <h2>2. はじめに</h2>
+
+        <h3 id="install">2.1 インストールと起動</h3>
+
+        <h4>ブラウザで直接使用する場合</h4>
+        <p>Safari または Chrome でアプリケーションの URL にアクセスしてください。インターネット接続がある環境であれば、インストール不要で使用できます。</p>
+
+        <h4>iPhone のホーム画面に追加する場合（推奨）</h4>
+        <ol class="procedure">
+            <li>Safari でアプリケーションの URL を開く</li>
+            <li>画面下部の共有ボタン（四角から上矢印のアイコン）をタップ</li>
+            <li>「ホーム画面に追加」を選択</li>
+            <li>名前を確認して「追加」をタップ</li>
+        </ol>
+        <p>ホーム画面に追加すると、通常のアプリと同様にフルスクリーンで起動し、オフラインでも使用できます。</p>
+
+        <h3 id="disclaimer">2.2 免責事項の確認</h3>
+        <p>アプリケーションを起動すると、最初に免責事項のモーダルが表示されます。内容を確認し、「Accept and Start」をタップして開始してください。</p>
+
+        <img src="images/01_disclaimer.png" alt="免責事項モーダル" class="screenshot">
+        <p class="screenshot-caption">図1: 起動時の免責事項確認画面</p>
+
+        <div class="info-box info-box-danger">
+            <strong>重要</strong>
+            本アプリケーションは教育・研究目的専用です。臨床診断や治療の根拠として使用しないでください。すべての臨床判断は、資格を有する医療専門家の責任のもとで行ってください。
+        </div>
+
+        <h3 id="patient">2.3 患者情報の設定</h3>
+        <p>画面右上の患者情報ボタン（人型アイコンと <code>35y 70kg</code> の表示）をタップすると、Patient Information モーダルが開きます。</p>
+
+        <img src="images/05_patient_modal.png" alt="患者情報設定モーダル" class="screenshot">
+        <p class="screenshot-caption">図2: 患者情報設定画面</p>
+
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>既定値</th>
+                    <th>範囲</th>
+                    <th>説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Patient ID</td>
+                    <td>Patient-YYYY-MM-DD</td>
+                    <td>任意の文字列</td>
+                    <td>患者識別子（任意設定）</td>
+                </tr>
+                <tr>
+                    <td>Age（年齢）</td>
+                    <td>35</td>
+                    <td>18 -- 100</td>
+                    <td>PK パラメータの計算に使用</td>
+                </tr>
+                <tr>
+                    <td>Weight（体重, kg）</td>
+                    <td>70</td>
+                    <td>30 -- 200</td>
+                    <td>分布容積・クリアランスの計算に使用</td>
+                </tr>
+                <tr>
+                    <td>Height（身長, cm）</td>
+                    <td>170</td>
+                    <td>120 -- 220</td>
+                    <td>BMI の計算に使用</td>
+                </tr>
+                <tr>
+                    <td>Sex（性別）</td>
+                    <td>Male</td>
+                    <td>Male / Female</td>
+                    <td>PK パラメータの計算に使用</td>
+                </tr>
+                <tr>
+                    <td>Opioid Co-administration</td>
+                    <td>No</td>
+                    <td>Yes / No</td>
+                    <td>オピオイド併用の有無（Eleveld モデルの Ce50 に影響）</td>
+                </tr>
+                <tr>
+                    <td>Anesthesia Start Time</td>
+                    <td>08:00</td>
+                    <td>--</td>
+                    <td>麻酔開始時刻（Step 3 の時刻表示に使用）</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box info-box-note">
+            <strong>補足</strong>
+            BMI は身長と体重から自動計算されます。Opioid Co-administration を Yes に設定すると、Eleveld モデルにおけるオピオイド併用時の効果部位濃度パラメータが適用されます。患者情報の変更は各ステップのシミュレーション結果に即座に反映されます。シミュレーション開始前に正しい値を設定してください。
+        </div>
+    </section>
+
+    <!-- ========================================
+         3. Step 1: Induction
+         ======================================== -->
+    <section id="step1">
+        <h2>3. Step 1: Induction -- リアルタイム導入予測</h2>
+        <p>
+            麻酔導入時のボーラス投与と持続投与による血漿中濃度（Cp）および効果部位濃度（Ce）の推移をリアルタイムでシミュレーションします。
+            意識消失（Loss of Consciousness）が確認された時点で LOC ボタンを押し、その時の Ce を記録します。
+        </p>
+
+        <img src="images/02_step1_initial.png" alt="Step 1 初期画面" class="screenshot">
+        <p class="screenshot-caption">図3: Step 1 初期画面</p>
+
+        <h3 id="step1-params">3.1 投与設定</h3>
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>パラメータ</th>
+                    <th>既定値</th>
+                    <th>単位</th>
+                    <th>説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bolus</td>
+                    <td>140</td>
+                    <td>mg</td>
+                    <td>ボーラス投与量（範囲: 10 -- 200 mg）</td>
+                </tr>
+                <tr>
+                    <td>Continuous</td>
+                    <td>200</td>
+                    <td>mg/hr</td>
+                    <td>持続投与速度（範囲: 0 -- 500 mg/hr）</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>各パラメータは <kbd>-</kbd> / <kbd>+</kbd> ボタンで調整するか、数値を直接入力できます。</p>
+
+        <h3 id="step1-run">3.2 シミュレーション実行</h3>
+        <ol class="procedure">
+            <li>Bolus（mg）と Continuous（mg/hr）を設定する</li>
+            <li><kbd>Start</kbd> ボタンをタップしてシミュレーションを開始する</li>
+            <li>リアルタイムで Plasma Cp、Effect-site Ce、経過時間が更新される</li>
+            <li>チャートにCp（青線）と Ce（緑線）の推移が描画される</li>
+            <li>必要に応じて <kbd>Record</kbd> ボタンで任意の時点のスナップショットを保存する</li>
+            <li><kbd>Stop</kbd> ボタンでシミュレーションを停止する</li>
+        </ol>
+
+        <img src="images/03_step1_running.png" alt="Step 1 実行中" class="screenshot">
+        <p class="screenshot-caption">図4: リアルタイムシミュレーション実行中の画面</p>
+
+        <p>画面中央のカード表示領域には、以下の値がリアルタイムで表示されます。</p>
+        <ul>
+            <li><strong>Plasma Cp</strong> -- 血漿中濃度（単位: ug/mL）</li>
+            <li><strong>Effect-site Ce</strong> -- 効果部位濃度（単位: ug/mL）。シアン色のハイライト枠で強調表示</li>
+            <li><strong>Elapsed</strong> -- シミュレーション開始からの経過時間（mm:ss 形式）</li>
+        </ul>
+
+        <h3 id="step1-loc">3.3 LOC Ce の記録</h3>
+        <p>
+            シミュレーション実行中、患者の意識消失（Loss of Consciousness）が確認された時点で <kbd>LOC</kbd> ボタンをタップします。
+            そのときの Effect-site Ce が LOC Ce として記録され、画面上に表示されます。
+        </p>
+
+        <img src="images/04_step1_loc_recorded.png" alt="LOC Ce 記録後" class="screenshot">
+        <p class="screenshot-caption">図5: LOC Ce が記録された状態</p>
+
+        <div class="info-box info-box-note">
+            <strong>LOC Ce とは</strong>
+            LOC Ce（Loss of Consciousness Ce）は、患者が意識を消失したときの効果部位濃度です。プロポフォールでは一般的に 2 -- 4 ug/mL 程度です。この値は Step 2 に自動的に引き継がれ、安全マージンの計算基準として使用されます。LOC ボタンは一度だけ押すことができます。
+        </div>
+
+        <p>LOC Ce の記録が完了したら、画面下部の <kbd>Proceed to Protocol</kbd> ボタンをタップして Step 2 に進みます。</p>
+    </section>
+
+    <!-- ========================================
+         4. Step 2: Protocol
+         ======================================== -->
+    <section id="step2">
+        <h2>4. Step 2: Protocol -- ステップダウンプロトコル最適化</h2>
+        <p>
+            Step 1 で記録した LOC Ce を基準に、安全マージンを加えた目標濃度（Target Ce）を設定し、
+            その濃度を維持するための最適な持続投与速度とステップダウンスケジュールを自動計算します。
+        </p>
+
+        <img src="images/06_step2_initial.png" alt="Step 2 初期画面" class="screenshot">
+        <p class="screenshot-caption">図6: Step 2 初期画面（LOC Ce が Step 1 から自動転送されている）</p>
+
+        <h3 id="step2-margin">4.1 安全マージンの設定</h3>
+        <p>画面上部のシアン色バナーに Step 1 から引き継がれた LOC Ce が表示されます。Safety Margin の設定項目では以下のように目標濃度が計算されます。</p>
+
+        <p style="text-align: center; font-size: 1.1rem; margin: 1rem 0; color: #00BCD4;">
+            <strong>Target Ce = LOC Ce + Safety Margin</strong>
+        </p>
+
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>パラメータ</th>
+                    <th>既定値</th>
+                    <th>単位</th>
+                    <th>説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Safety Margin</td>
+                    <td>1.5</td>
+                    <td>ug/mL</td>
+                    <td>LOC Ce に加算する安全マージン（0.1 刻み）</td>
+                </tr>
+                <tr>
+                    <td>Target Ce</td>
+                    <td>自動計算（約 3.0 ug/mL）</td>
+                    <td>ug/mL</td>
+                    <td>目標効果部位濃度（手動変更も可能、0.1 刻み）</td>
+                </tr>
+                <tr>
+                    <td>Bolus</td>
+                    <td>140</td>
+                    <td>mg</td>
+                    <td>プロトコルで使用するボーラス量</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 id="step2-optimize">4.2 最適化の実行</h3>
+        <ol class="procedure">
+            <li>Safety Margin を必要に応じて調整する（計算された Target Ce が画面に表示される）</li>
+            <li>Target Ce と Bolus の値を確認する</li>
+            <li><kbd>Execute Optimization</kbd> ボタンをタップする</li>
+            <li>最適化結果が結果カードとチャートに表示される</li>
+        </ol>
+
+        <h3 id="step2-results">4.3 結果の解釈</h3>
+
+        <img src="images/07_step2_results.png" alt="Step 2 最適化結果" class="screenshot">
+        <p class="screenshot-caption">図7: プロトコル最適化の結果カード</p>
+
+        <p>最適化完了後、以下の指標が結果カードに表示されます。</p>
+
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>指標</th>
+                    <th>単位</th>
+                    <th>説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Optimal Rate</td>
+                    <td>mg/hr</td>
+                    <td>最適な持続投与速度</td>
+                </tr>
+                <tr>
+                    <td>Final Ce</td>
+                    <td>ug/mL</td>
+                    <td>シミュレーション終了時の効果部位濃度</td>
+                </tr>
+                <tr>
+                    <td>Accuracy</td>
+                    <td>%</td>
+                    <td>目標濃度に対する達成精度</td>
+                </tr>
+                <tr>
+                    <td>Min BIS</td>
+                    <td>--</td>
+                    <td>シミュレーション中の最小 BIS 予測値</td>
+                </tr>
+                <tr>
+                    <td>Stability</td>
+                    <td>/100</td>
+                    <td>濃度の安定性指標（100 が最高）</td>
+                </tr>
+                <tr>
+                    <td>Convergence</td>
+                    <td>min</td>
+                    <td>目標濃度への収束時間</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <img src="images/08_step2_chart.png" alt="Step 2 チャート" class="screenshot">
+        <p class="screenshot-caption">図8: プロトコルの濃度推移チャート</p>
+
+        <p>チャートの下には「Dosing Schedule」（投与スケジュール）の折りたたみセクションがあり、展開すると各時点での投与速度の変更タイミングを確認できます。</p>
+
+        <h3 id="step2-advanced">4.4 詳細設定（Advanced Settings）</h3>
+        <p>「Advanced Settings」を展開すると、プロトコル最適化アルゴリズムの追加パラメータを調整できます。</p>
+
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>パラメータ</th>
+                    <th>既定値</th>
+                    <th>範囲</th>
+                    <th>説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reach Time（到達時間）</td>
+                    <td>20 min</td>
+                    <td>10 -- 60</td>
+                    <td>目標濃度に到達するまでの許容時間</td>
+                </tr>
+                <tr>
+                    <td>Upper Threshold（上限閾値）</td>
+                    <td>120%</td>
+                    <td>105 -- 130</td>
+                    <td>目標濃度に対する上限の割合</td>
+                </tr>
+                <tr>
+                    <td>Reduction Factor（減量係数）</td>
+                    <td>70%</td>
+                    <td>50 -- 90</td>
+                    <td>ステップダウン時の投与速度削減割合</td>
+                </tr>
+                <tr>
+                    <td>Adj. Interval（調整間隔）</td>
+                    <td>5 min</td>
+                    <td>3 -- 10</td>
+                    <td>投与速度の再評価間隔</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box info-box-warning">
+            <strong>注意</strong>
+            詳細設定は通常の使用では変更する必要はありません。パラメータの意味を十分に理解した上で調整してください。
+        </div>
+
+        <p>最適化結果を確認したら、<kbd>Monitoring</kbd> ボタンをタップして Step 3 に進みます。プロトコルの結果は Step 3 に自動転送されます。</p>
+    </section>
+
+    <!-- ========================================
+         5. Step 3: Monitoring
+         ======================================== -->
+    <section id="step3">
+        <h2>5. Step 3: Monitoring -- 実投与量モニタリング</h2>
+        <p>
+            Step 2 で最適化されたプロトコルに基づいて投与スケジュールが自動入力されます。
+            実際の投与量を編集・追加し、濃度推移をシミュレーションします。
+        </p>
+
+        <img src="images/09_step3_initial.png" alt="Step 3 初期画面" class="screenshot">
+        <p class="screenshot-caption">図9: Step 3 初期画面（プロトコルデータが自動転送されている）</p>
+
+        <p>画面上部のシアン色バナーには、Step 2 から転送されたプロトコル情報（ボーラス量と持続投与速度）が表示されます。</p>
+
+        <h3 id="step3-events">5.1 投与イベントの入力</h3>
+        <p>Dose Events セクションには、Step 2 のプロトコルから転送されたイベントが一覧表示されます。各イベントには以下の情報が含まれます。</p>
+        <ul>
+            <li>経過時間と実時刻（例: <code>0 min (08:00)</code>）</li>
+            <li>ボーラス投与量（例: <code>Bolus: 140mg</code>）</li>
+            <li>持続投与速度（例: <code>200mg/hr</code>）</li>
+        </ul>
+
+        <h4>投与イベントの追加</h4>
+        <ol class="procedure">
+            <li><kbd>+ Add</kbd> ボタンをタップする</li>
+            <li>投与時刻を入力する（Anesthesia Start Time が基準として表示される）</li>
+            <li>Bolus（mg）および Continuous（mg/hr）を設定する</li>
+            <li><kbd>Add</kbd> ボタンで確定する</li>
+        </ol>
+
+        <p>既存のイベントを削除するには、各イベント右側の赤い削除ボタンをタップします。</p>
+
+        <h3 id="step3-sim">5.2 シミュレーション実行</h3>
+        <ol class="procedure">
+            <li>投与イベントの一覧を確認・修正する</li>
+            <li><kbd>Run Simulation</kbd> ボタンをタップする</li>
+            <li>結果カードにMax Cp、Max Ce、Min BIS が表示される</li>
+            <li>チャートに Cp と Ce の時間推移が描画される</li>
+        </ol>
+
+        <img src="images/10_step3_results.png" alt="Step 3 結果" class="screenshot">
+        <p class="screenshot-caption">図10: シミュレーション結果の表示</p>
+
+        <img src="images/11_step3_chart.png" alt="Step 3 チャート" class="screenshot">
+        <p class="screenshot-caption">図11: モニタリングチャート</p>
+
+        <h3 id="step3-csv">5.3 CSV エクスポート</h3>
+        <p>
+            <kbd>Export CSV</kbd> ボタンをタップすると、シミュレーション結果を CSV 形式でダウンロードできます。
+            エクスポートされるデータには、時間、投与量、血漿中濃度、効果部位濃度の推移が含まれます。
+        </p>
+
+        <div class="info-box info-box-note">
+            <strong>補足</strong>
+            CSV ファイルは研究データの記録や、表計算ソフトでの二次解析に活用できます。
+        </div>
+    </section>
+
+    <!-- ========================================
+         6. Workflow
+         ======================================== -->
+    <section id="workflow">
+        <h2>6. ワークフロー全体の流れ</h2>
+
+        <p>本アプリケーションは 3 ステップを順番に進める設計です。各ステップのデータは次のステップに自動的に引き継がれます。</p>
+
+        <ol class="procedure">
+            <li>
+                <strong>患者情報を設定する</strong> --
+                画面右上の患者ボタンから Patient Information を開き、年齢・体重・身長・性別・オピオイド併用の有無を入力する
+            </li>
+            <li>
+                <strong>Step 1: 導入予測を実行する</strong> --
+                ボーラス量と持続投与速度を設定し、Start でリアルタイムシミュレーションを開始する。意識消失が確認されたら LOC ボタンを押す
+            </li>
+            <li>
+                <strong>Step 2: プロトコルを最適化する</strong> --
+                LOC Ce に安全マージンを加えた Target Ce を確認し、Execute Optimization で最適な投与スケジュールを算出する
+            </li>
+            <li>
+                <strong>Step 3: 実投与をモニタリングする</strong> --
+                プロトコルから転送された投与スケジュールを実際の投与に合わせて修正し、Run Simulation で濃度推移を確認する。必要に応じて CSV をエクスポートする
+            </li>
+        </ol>
+
+        <div class="info-box info-box-note">
+            <strong>データの引き継ぎ</strong>
+            <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                <li>Step 1 の LOC Ce は Step 2 に自動転送される</li>
+                <li>Step 2 の最適化プロトコル（ボーラス量・持続投与速度・ステップダウンスケジュール）は Step 3 に自動転送される</li>
+            </ul>
+        </div>
+
+        <p>ステップ間の移動は、画面上部のタブナビゲーション（<span class="step-badge">1</span> Induction / <span class="step-badge">2</span> Protocol / <span class="step-badge">3</span> Monitoring）、または各ステップ下部のナビゲーションボタンで行えます。</p>
+    </section>
+
+    <!-- ========================================
+         7. PK Model
+         ======================================== -->
+    <section id="pk-model">
+        <h2>7. 薬物動態モデルについて</h2>
+
+        <p>
+            本アプリケーションは、以下の文献に記載されたプロポフォールの母集団薬物動態/薬力学モデルに基づいています。
+        </p>
+
+        <div class="info-box info-box-note">
+            <strong>参考文献</strong>
+            Eleveld DJ, et al. Pharmacokinetic-pharmacodynamic model for propofol for broad application in anaesthesia and sedation.
+            <em>British Journal of Anaesthesia</em>. 2018;120(5):942-959.
+        </div>
+
+        <p>モデルは 3 コンパートメント PK モデル（中心コンパートメント、末梢浅部コンパートメント、末梢深部コンパートメント）とエフェクトコンパートメントで構成されています。患者の年齢・体重・身長・性別・オピオイド併用の有無に基づいて PK/PD パラメータ（分布容積、クリアランス、ke0 等）が個別に計算されます。</p>
+
+        <p>Eleveld モデルは広範な患者集団（新生児から高齢者、痩身から肥満患者）のデータに基づいて構築されており、allometric scaling を用いた体重補正と共変量（年齢・性別・オピオイド併用）の影響が組み込まれています。</p>
+
+        <h3>使用単位</h3>
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>単位</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ボーラス投与量</td>
+                    <td>mg</td>
+                </tr>
+                <tr>
+                    <td>持続投与速度</td>
+                    <td>mg/hr</td>
+                </tr>
+                <tr>
+                    <td>血漿中濃度（Cp）</td>
+                    <td>ug/mL</td>
+                </tr>
+                <tr>
+                    <td>効果部位濃度（Ce）</td>
+                    <td>ug/mL</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ========================================
+         8. Tips
+         ======================================== -->
+    <section id="tips">
+        <h2>8. 使い方のヒント</h2>
+
+        <h3>効率的な操作方法</h3>
+        <ul>
+            <li>数値の調整は <kbd>-</kbd> / <kbd>+</kbd> ステッパーボタンを使うと、設定された刻み幅で正確に変更できます</li>
+            <li>数値フィールドをタップすると、テンキーで直接値を入力できます</li>
+            <li>Step 1 の Record ボタンを活用して、複数の時点で濃度のスナップショットを保存しましょう</li>
+        </ul>
+
+        <h3>LOC Ce の活用</h3>
+        <ul>
+            <li>LOC Ce は Step 2 の目標濃度計算の基準になる重要な値です。正確なタイミングで記録してください</li>
+            <li>Step 2 の Safety Margin は既定で 1.5 ug/mL に設定されています。患者の状態に応じて調整してください</li>
+            <li>Target Ce は LOC Ce + Safety Margin で自動計算されますが、手動で変更することも可能です</li>
+            <li>プロポフォールの一般的な維持濃度は 2 -- 5 ug/mL です。Target Ce がこの範囲内にあるか確認してください</li>
+        </ul>
+
+        <h3>Step 3 の活用</h3>
+        <ul>
+            <li>プロトコルから転送されたイベントはそのまま使用できますが、実際の投与状況に合わせて編集してください</li>
+            <li>追加のボーラス投与や投与速度の変更があった場合は、<kbd>+ Add</kbd> で新しいイベントを追加できます</li>
+            <li>CSV エクスポートでデータを保存しておくと、後から詳細な分析が可能です</li>
+        </ul>
+
+        <h3>PWA としての使用</h3>
+        <ul>
+            <li>iPhone の Safari でホーム画面に追加すると、オフライン環境でもアプリが動作します</li>
+            <li>フルスクリーンモードで表示されるため、ブラウザの UI による画面の圧迫がありません</li>
+            <li>アプリのデータはブラウザのローカルストレージに保存されます</li>
+        </ul>
+    </section>
+
+    <!-- ========================================
+         9. Troubleshooting
+         ======================================== -->
+    <section id="troubleshooting">
+        <h2>9. トラブルシューティング</h2>
+
+        <h3>アプリが起動しない</h3>
+        <ul>
+            <li>ブラウザのキャッシュをクリアして再読み込みしてください</li>
+            <li>Safari または Chrome の最新バージョンを使用してください</li>
+            <li>PWA として追加している場合は、一度削除して再追加してください</li>
+        </ul>
+
+        <h3>LOC Ce が Step 2 に表示されない</h3>
+        <ul>
+            <li>Step 1 で LOC ボタンを押して LOC Ce を記録してください</li>
+            <li>LOC ボタンはシミュレーション実行中のみ表示されます。Start ボタンでシミュレーションを開始してから LOC ボタンを押してください</li>
+        </ul>
+
+        <h3>プロトコルが Step 3 に転送されない</h3>
+        <ul>
+            <li>Step 2 で Execute Optimization を実行してから Step 3 に移動してください</li>
+            <li>最適化が未実行の場合、転送されるデータがありません</li>
+        </ul>
+
+        <h3>チャートが表示されない</h3>
+        <ul>
+            <li>オフライン環境で初めて使用する場合、Chart.js ライブラリがキャッシュされていない可能性があります。一度オンラインでアプリを開いてからオフラインで使用してください</li>
+        </ul>
+
+        <h3>診断機能</h3>
+        <p>
+            画面右上の歯車アイコンをタップすると、エラー診断画面にアクセスできます。
+            技術的な問題が発生した場合は、この画面のエラーログを確認してください。
+        </p>
+    </section>
+
+    <!-- ========================================
+         10. Disclaimer
+         ======================================== -->
+    <section id="disclaimer-section">
+        <h2>10. 免責事項</h2>
+
+        <div class="info-box info-box-danger">
+            <strong>重要な注意事項</strong>
+            <ul style="margin-top: 0.5rem;">
+                <li>本アプリケーションは<strong>教育および研究目的</strong>でのみ使用してください</li>
+                <li>臨床診断や治療の根拠として使用しないでください</li>
+                <li>すべての臨床判断は、資格を有する医療専門家の責任のもとで行ってください</li>
+                <li>計算結果は理論値であり、実際の臨床値とは異なる場合があります</li>
+                <li>本アプリケーションの使用により生じたいかなる損害についても、開発者は一切の責任を負いません</li>
+            </ul>
+        </div>
+
+        <p>
+            本アプリケーションは Eleveld et al. (2018) British Journal of Anaesthesia に掲載された薬物動態/薬力学モデルに基づいて構築されています。
+            モデルの適用範囲や限界については、原著論文を参照してください。
+        </p>
+    </section>
+
+    <!-- ========================================
+         Footer
+         ======================================== -->
+    <footer class="doc-footer">
+        <p>Propofol TCI TIVA V2.1 取扱説明書</p>
+        <p>開発: YASUYUKI SUZUKI -- 済生会松山病院麻酔科 / 愛媛大学大学院医学系研究科薬理学</p>
+        <p>教育・研究目的専用 -- 臨床使用不可</p>
+        <p>Based on Eleveld et al. (2018) BJA PK/PD model</p>
+    </footer>
+
+</div><!-- /page-wrapper -->
+
+</body>
+</html>
