@@ -1,5 +1,5 @@
 /**
- * Main Application Controller for Propofol TCI TIVA V2.1.0
+ * Main Application Controller for Propofol TCI TIVA V2.1.1
  * Seamless 3-step workflow: Induction -> Protocol -> Monitoring
  * Based on Eleveld et al. (2018) BJA PK/PD model
  */
@@ -42,7 +42,7 @@ class MainApplicationController {
     }
 
     initialize() {
-        console.log('Initializing Propofol TCI TIVA V2.1.0');
+        console.log('Initializing Propofol TCI TIVA V2.1.1');
 
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');

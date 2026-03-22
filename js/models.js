@@ -37,7 +37,7 @@ const EleveldModelConstants = {
         2: 25.5,    // V2_ref (L)
         3: 273,     // V3_ref (L)
         4: 1.79,    // CL_ref (male) (L/min)
-        5: 1.83,    // Q2_ref (L/min)
+        5: 1.75,    // Q2_ref (L/min) — Corrigendum BJA 2018;121(2):519
         6: 1.11,    // Q3_ref (L/min)
         7: 0.191,   // Typical residual error
         8: 42.3,    // CL maturation E50 (weeks)
