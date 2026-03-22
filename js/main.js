@@ -648,25 +648,25 @@ class MainApplicationController {
                     {
                         label: 'Cp',
                         data: chartData.plasmaConcentrations,
-                        borderColor: '#29B6F6',
+                        borderColor: '#3266AD',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
                         label: 'Ce',
                         data: chartData.effectSiteConcentrations,
-                        borderColor: '#4CAF50',
+                        borderColor: '#1D9E75',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 2
                     },
                     {
                         label: 'Target',
                         data: chartData.targetLine,
-                        borderColor: 'rgba(244,67,54,0.8)',
+                        borderColor: 'rgba(216,90,48,0.8)',
                         borderDash: [5, 5], tension: 0, pointRadius: 0, borderWidth: 1.5, fill: false
                     },
                     {
                         label: 'Rate',
                         data: chartData.infusionRates,
-                        borderColor: '#CE93D8',
+                        borderColor: '#9B72B0',
                         tension: 0.1, pointRadius: 0, borderWidth: 1.5, fill: false,
                         yAxisID: 'y1'
                     }
@@ -681,18 +681,18 @@ class MainApplicationController {
                         events: ['click', 'touchstart'],
                         padding: 10, cornerRadius: 8,
                         titleFont: { size: 12 }, bodyFont: { size: 11 },
-                        backgroundColor: '#333', titleColor: '#fff', bodyColor: '#e0e0e0',
-                        borderColor: '#4a4a4a', borderWidth: 1
+                        backgroundColor: '#161B22', titleColor: '#E6EDF3', bodyColor: '#C9D1D9',
+                        borderColor: '#30363D', borderWidth: 1
                     },
-                    legend: { display: true, labels: { boxWidth: 12, font: { size: 11 }, color: '#a0a0a0' } }
+                    legend: { display: true, labels: { boxWidth: 12, font: { size: 11 }, color: '#8B949E' } }
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#a0a0a0' }, ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#8B949E' }, ticks: { color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
                     y1: {
                         type: 'linear', display: true, position: 'right', beginAtZero: true,
-                        title: { display: true, text: 'Rate (mg/hr)', font: { size: 10 }, color: '#a0a0a0' },
-                        ticks: { color: '#a0a0a0' },
+                        title: { display: true, text: 'Rate (mg/hr)', font: { size: 10 }, color: '#8B949E' },
+                        ticks: { color: '#8B949E' },
                         grid: { drawOnChartArea: false }
                     }
                 }
@@ -907,13 +907,13 @@ class MainApplicationController {
                     {
                         label: 'Cp',
                         data: chartData.plasmaData,
-                        borderColor: '#29B6F6',
+                        borderColor: '#3266AD',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
                         label: 'Ce',
                         data: chartData.effectData,
-                        borderColor: '#4CAF50',
+                        borderColor: '#1D9E75',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 2
                     }
                 ]
@@ -927,14 +927,14 @@ class MainApplicationController {
                         events: ['click', 'touchstart'],
                         padding: 10, cornerRadius: 8,
                         titleFont: { size: 12 }, bodyFont: { size: 11 },
-                        backgroundColor: '#333', titleColor: '#fff', bodyColor: '#e0e0e0',
-                        borderColor: '#4a4a4a', borderWidth: 1
+                        backgroundColor: '#161B22', titleColor: '#E6EDF3', bodyColor: '#C9D1D9',
+                        borderColor: '#30363D', borderWidth: 1
                     },
-                    legend: { labels: { boxWidth: 12, font: { size: 11 }, color: '#a0a0a0' } }
+                    legend: { labels: { boxWidth: 12, font: { size: 11 }, color: '#8B949E' } }
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#a0a0a0' }, ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#8B949E' }, ticks: { color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } }
                 }
             }
         });
