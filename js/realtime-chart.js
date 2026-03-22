@@ -28,8 +28,8 @@ class RealtimeChart {
                 datasets: [{
                     label: 'Effect-site Concentration',
                     data: [],
-                    borderColor: '#4CAF50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderColor: '#1D9E75',
+                    backgroundColor: 'rgba(29, 158, 117, 0.1)',
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0,
@@ -38,8 +38,8 @@ class RealtimeChart {
                 }, {
                     label: 'BIS Value',
                     data: [],
-                    borderColor: '#FFC107',
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderColor: '#BA7517',
+                    backgroundColor: 'rgba(186, 117, 23, 0.1)',
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0,
@@ -61,21 +61,21 @@ class RealtimeChart {
                     title: {
                         display: true,
                         text: 'Real-time Effect-site Concentration & BIS Value',
-                        color: '#a0a0a0',
+                        color: '#8B949E',
                         font: { size: 12 }
                     },
                     legend: {
                         display: true,
                         position: 'top',
-                        labels: { color: '#a0a0a0', boxWidth: 12, font: { size: 11 } }
+                        labels: { color: '#8B949E', boxWidth: 12, font: { size: 11 } }
                     },
                     tooltip: {
                         mode: 'index',
                         intersect: false,
-                        backgroundColor: '#333',
-                        titleColor: '#fff',
-                        bodyColor: '#e0e0e0',
-                        borderColor: '#4a4a4a',
+                        backgroundColor: '#161B22',
+                        titleColor: '#E6EDF3',
+                        bodyColor: '#C9D1D9',
+                        borderColor: '#30363D',
                         borderWidth: 1,
                         callbacks: {
                             label: function(context) {
@@ -100,10 +100,10 @@ class RealtimeChart {
                         title: {
                             display: true,
                             text: 'Time (seconds)',
-                            color: '#a0a0a0'
+                            color: '#8B949E'
                         },
                         ticks: {
-                            color: '#a0a0a0',
+                            color: '#8B949E',
                             callback: function(value) {
                                 // Convert seconds to MM:SS format
                                 const minutes = Math.floor(value / 60);
@@ -111,7 +111,7 @@ class RealtimeChart {
                                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
                             }
                         },
-                        grid: { color: 'rgba(255,255,255,0.08)' }
+                        grid: { color: 'rgba(255,255,255,0.06)' }
                     },
                     y: {
                         type: 'linear',
@@ -120,13 +120,13 @@ class RealtimeChart {
                         title: {
                             display: true,
                             text: 'Effect-site Concentration (μg/mL)',
-                            color: '#a0a0a0'
+                            color: '#8B949E'
                         },
                         beginAtZero: true,
-                        ticks: { color: '#a0a0a0' },
+                        ticks: { color: '#8B949E' },
                         grid: {
                             drawOnChartArea: true,
-                            color: 'rgba(255,255,255,0.08)',
+                            color: 'rgba(255,255,255,0.06)',
                         },
                     },
                     y1: {
@@ -136,11 +136,11 @@ class RealtimeChart {
                         title: {
                             display: true,
                             text: 'BIS Value',
-                            color: '#a0a0a0'
+                            color: '#8B949E'
                         },
                         min: 0,
                         max: 100,
-                        ticks: { color: '#a0a0a0' },
+                        ticks: { color: '#8B949E' },
                         grid: {
                             drawOnChartArea: false,
                         },
