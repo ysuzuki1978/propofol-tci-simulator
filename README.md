@@ -1,4 +1,4 @@
-# Propofol TCI TIVA V2.1 - Target Controlled Infusion Simulator
+# Propofol TCI TIVA V2.2 - Target Controlled Infusion Simulator
 
 ## Overview
 
@@ -23,6 +23,16 @@ A Progressive Web Application for Target-Controlled Infusion (TCI) simulation of
 - **Dose Monitoring**: Actual dose input with concentration simulation and CSV export
 - **Validated PK Model**: Eleveld et al. (2018) BJA three-compartment PK/PD model with BIS integration
 - **iPhone-optimized PWA**: Offline capability, dark OR-monitor theme, safe-area support
+
+## Version History
+
+### V2.2 (2026-03-23)
+- **PWA Update Notification**: Non-intrusive banner notifies users when a new version is available; update applies on next launch without interrupting active sessions
+- **Service Worker Cache Sync**: Aligned SW version with app version
+
+### V2.1
+- Bug fixes and Eleveld PK/PD model refinements
+- OR-monitor dark theme for clinical environment
 
 ## System Requirements
 

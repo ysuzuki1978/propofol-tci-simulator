@@ -564,13 +564,65 @@
     <script src="js/realtime-chart.js"></script>
     <script src="js/main.js"></script>
 
-    <!-- Service Worker Registration -->
+    <!-- PWA Update Notification Banner -->
+    <div id="pwa-update-banner" style="
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        background: linear-gradient(135deg, #3D7EA6, #5BA4CF);
+        color: #E3F2FD;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        box-shadow: 0 -2px 12px rgba(0,0,0,0.4);
+        animation: slideUp 0.3s ease-out;
+    ">
+        <style>
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            #pwa-update-banner button {
+                border: none; border-radius: 6px; padding: 8px 16px;
+                font-size: 14px; font-weight: 600; cursor: pointer;
+                margin-left: 8px; transition: opacity 0.2s;
+            }
+            #pwa-update-banner button:active { opacity: 0.7; }
+        </style>
+        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto;">
+            <span style="flex: 1;">Update ready — will apply on next launch</span>
+            <button onclick="dismissUpdate()" style="background: #E3F2FD; color: #3D7EA6;">OK</button>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration with Update Detection -->
     <script>
+        function dismissUpdate() {
+            document.getElementById('pwa-update-banner').style.display = 'none';
+        }
+
         if ('serviceWorker' in navigator && location.protocol !== 'file:') {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
                         console.log('SW registered: ', registration);
+
+                        // Detect waiting worker (new version already downloaded)
+                        if (registration.waiting) {
+                            document.getElementById('pwa-update-banner').style.display = 'block';
+                            return;
+                        }
+
+                        // Detect new worker installing
+                        registration.addEventListener('updatefound', () => {
+                            const installingWorker = registration.installing;
+                            installingWorker.addEventListener('statechange', () => {
+                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version downloaded, notify user (applied on next launch)
+                                    document.getElementById('pwa-update-banner').style.display = 'block';
+                                }
+                            });
+                        });
                     })
                     .catch(registrationError => {
                         console.log('SW registration failed: ', registrationError);
