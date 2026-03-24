@@ -168,9 +168,10 @@ class ProtocolEngine {
         
         // Create simulation timeline
         const timeStep = this.settings.timeStep;
+        const numSteps = Math.round(this.settings.simulationDuration / timeStep);
         const times = [];
-        for (let t = 0; t <= this.settings.simulationDuration; t += timeStep) {
-            times.push(t);
+        for (let i = 0; i <= numSteps; i++) {
+            times.push(i * timeStep);
         }
         
         // Start with bolus and initial continuous rate
@@ -415,9 +416,10 @@ class ProtocolEngine {
         
         // Create time points
         const timeStep = this.settings.timeStep;
+        const numSteps = Math.round(targetTime / timeStep);
         const times = [];
-        for (let t = 0; t <= targetTime; t += timeStep) {
-            times.push(t);
+        for (let i = 0; i <= numSteps; i++) {
+            times.push(i * timeStep);
         }
         
         // Create infusion rate array

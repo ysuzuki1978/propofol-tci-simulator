@@ -1,8 +1,8 @@
 {
-  "name": "Propofol TCI TIVA V2.2.0",
+  "name": "Propofol TCI TIVA V2.3.0",
   "short_name": "Propofol TCI",
   "description": "Propofol TCI TIVA - Seamless 3-step workflow: Induction prediction, Protocol optimization, Dose monitoring with iPhone-optimized UI",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "scope": "/",
   "start_url": "./index.html",
   "display": "fullscreen",

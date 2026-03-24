@@ -57,7 +57,7 @@ class MonitoringEngine {
         this.doseEvents = [];
         this.lastSimulationResult = null;
         this.calculationMethod = 'Unified RK4 + Simple Effect-Site';
-        this.precision = 0.01; // 0.01-minute precision
+        this.precision = 0.1; // 0.1-minute time step
     }
 
     setPatient(patient) {
@@ -138,11 +138,12 @@ class MonitoringEngine {
         const maxEventTime = Math.max(...this.doseEvents.map(event => event.timeInMinutes));
         const finalDuration = simulationDurationMin || (maxEventTime + 120.0);
 
-        // Create high-precision time sequence
+        // Create time sequence
         const timeStep = this.precision;
+        const numSteps = Math.round(finalDuration / timeStep);
         const times = [];
-        for (let t = 0; t <= finalDuration; t += timeStep) {
-            times.push(t);
+        for (let i = 0; i <= numSteps; i++) {
+            times.push(i * timeStep);
         }
 
         // Calculate plasma concentrations using advanced methods

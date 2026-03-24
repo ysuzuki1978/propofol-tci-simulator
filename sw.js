@@ -1,8 +1,8 @@
-// Service Worker for Propofol TCI TIVA V2.2.0
+// Service Worker for Propofol TCI TIVA V2.3.0
 // PWA offline functionality and caching
 
-const CACHE_NAME = 'propofol-tci-v2.2.0';
-const VERSION = '2.2.0';
+const CACHE_NAME = 'propofol-tci-v2.3.0';
+const VERSION = '2.3.0';
 
 // Files to cache for offline use
 const urlsToCache = [
