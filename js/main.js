@@ -963,7 +963,7 @@ class MainApplicationController {
 
     exportCsv() {
         try {
-            const csvContent = this.monitoringEngine.exportToCSV();
+            const csvContent = this.monitoringEngine.exportToCSV(this.locCe);
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
             const patientId = this.appState.patient.id.replace(/[^a-zA-Z0-9]/g, '_');

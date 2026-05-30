@@ -472,8 +472,9 @@ class SimulationResult {
         return bolus;
     }
 
-    toCSV() {
+    toCSV(locCe = null) {
         const csvLines = [];
+        const locCeStr = (locCe !== null && !isNaN(locCe)) ? locCe.toFixed(3) : 'NA';
 
         // Per-time-point dose columns enable secondary use of the exported data:
         // bolus and the active continuous infusion rate (step function).
@@ -487,7 +488,7 @@ class SimulationResult {
         };
 
         if (this.patient) {
-            const patientInfo = `Patient ID:${this.patient.id},Age:${this.patient.age} years,Weight:${this.patient.weight} kg,Height:${this.patient.height} cm,Sex:${SexType.displayName(this.patient.sex)},ASA-PS:${AsapsType.displayName(this.patient.asaPS)},Opioid Co-admin:${OpioidType.displayName(this.patient.opioidCoadmin)},Anesthesia Start:${this.patient.formattedStartTime}`;
+            const patientInfo = `Patient ID:${this.patient.id},Age:${this.patient.age} years,Weight:${this.patient.weight} kg,Height:${this.patient.height} cm,Sex:${SexType.displayName(this.patient.sex)},ASA-PS:${AsapsType.displayName(this.patient.asaPS)},Opioid Co-admin:${OpioidType.displayName(this.patient.opioidCoadmin)},Anesthesia Start:${this.patient.formattedStartTime},LOC Ce(µg/mL):${locCeStr}`;
             csvLines.push(patientInfo);
 
             csvLines.push(`Time,${doseHeader},Predicted Plasma Conc.(µg/mL),Predicted Effect-site Conc.(µg/mL),Predicted BIS Value`);
