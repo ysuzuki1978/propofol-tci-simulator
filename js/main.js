@@ -194,6 +194,9 @@ class MainApplicationController {
         document.getElementById('addDoseBtn').addEventListener('click', () => this.showDoseModal());
         document.getElementById('runSimulationBtn').addEventListener('click', () => this.runMonitoringSimulation());
         document.getElementById('exportCsvBtn').addEventListener('click', () => this.exportCsv());
+        document.getElementById('saveSessionBtn').addEventListener('click', () => this.saveSession());
+        document.getElementById('loadSessionBtn').addEventListener('click', () => document.getElementById('loadSessionInput').click());
+        document.getElementById('loadSessionInput').addEventListener('change', (e) => this.handleSessionFile(e));
 
         // Dose modal
         document.getElementById('closeDoseModal').addEventListener('click', () => this.hideDoseModal());
@@ -943,29 +946,115 @@ class MainApplicationController {
     // =============================================
     // CSV Export
     // =============================================
+    triggerDownload(content, mimeType, filename) {
+        const blob = new Blob([content], { type: mimeType });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    }
+
     exportCsv() {
         try {
             const csvContent = this.monitoringEngine.exportToCSV();
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
             const patientId = this.appState.patient.id.replace(/[^a-zA-Z0-9]/g, '_');
             const filename = `propofol_${patientId}_${dateStr}.csv`;
 
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }
+            this.triggerDownload(csvContent, 'text/csv;charset=utf-8;', filename);
         } catch (error) {
             console.error('CSV export failed:', error);
             alert('Export error:\n' + error.message);
+        }
+    }
+
+    // =============================================
+    // Session Save / Load (JSON)
+    // =============================================
+    saveSession() {
+        try {
+            const patient = this.appState.patient;
+            if (!patient) {
+                alert('No patient data available to save.');
+                return;
+            }
+            const doseEvents = this.monitoringEngine.getDoseEvents();
+            const session = TCISession.build(patient, doseEvents, 'V2.4.0');
+            const content = JSON.stringify(session, null, 2);
+
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const patientId = patient.id.replace(/[^a-zA-Z0-9]/g, '_');
+            const filename = `propofol_${patientId}_session_${dateStr}.json`;
+
+            this.triggerDownload(content, 'application/json;charset=utf-8;', filename);
+        } catch (error) {
+            console.error('Session save failed:', error);
+            alert('Save error:\n' + error.message);
+        }
+    }
+
+    handleSessionFile(e) {
+        const file = e.target.files && e.target.files[0];
+        // Reset the input so selecting the same file again re-triggers change.
+        e.target.value = '';
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                this.applySession(ev.target.result);
+            } catch (error) {
+                console.error('Session load failed:', error);
+                alert('Load error:\n' + error.message);
+            }
+        };
+        reader.onerror = () => alert('Load error:\nFailed to read the file.');
+        reader.readAsText(file);
+    }
+
+    applySession(text) {
+        const { patient, doseEvents } = TCISession.parse(text);
+
+        // Validate restored patient before applying.
+        const patientValidation = patient.validate();
+        if (!patientValidation.isValid) {
+            throw new Error('Patient data is invalid:\n' + patientValidation.errors.join('\n'));
+        }
+
+        // Validate restored dose events.
+        for (const event of doseEvents) {
+            const v = event.validate();
+            if (!v.isValid) {
+                throw new Error(`Dose event at ${event.timeInMinutes} min is invalid:\n` + v.errors.join('\n'));
+            }
+        }
+
+        // Restore patient and propagate to all engines (mirrors savePatientData).
+        this.appState.patient = patient;
+        this.protocolEngine.setPatient(patient);
+        this.advancedProtocolEngine.setPatient(patient);
+        this.monitoringEngine.setPatient(patient);
+
+        // Restore dose events.
+        this.monitoringEngine.clearDoseEvents();
+        for (const event of doseEvents) {
+            this.monitoringEngine.addDoseEvent(event);
+        }
+
+        // Refresh UI and re-run the monitoring simulation.
+        this.updatePatientDisplay();
+        this.updateMonitoringDisplay();
+        if (doseEvents.length > 0) {
+            this.runMonitoringSimulation();
         }
     }
 }

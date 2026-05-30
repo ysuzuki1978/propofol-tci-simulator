@@ -225,6 +225,24 @@ class Patient {
             errors: errors
         };
     }
+
+    toJSON() {
+        return {
+            id: this.id,
+            age: this.age,
+            weight: this.weight,
+            height: this.height,
+            sex: this.sex,
+            asaPS: this.asaPS,
+            opioidCoadmin: this.opioidCoadmin,
+            anesthesiaStartTime: this.anesthesiaStartTime.toISOString()
+        };
+    }
+
+    static fromJSON(obj) {
+        const start = obj.anesthesiaStartTime ? new Date(obj.anesthesiaStartTime) : null;
+        return new Patient(obj.id, obj.age, obj.weight, obj.height, obj.sex, obj.asaPS, obj.opioidCoadmin, start);
+    }
 }
 
 // Dose Event Class
@@ -270,6 +288,18 @@ class DoseEvent {
             isValid: errors.length === 0,
             errors: errors
         };
+    }
+
+    toJSON() {
+        return {
+            timeInMinutes: this.timeInMinutes,
+            bolusMg: this.bolusMg,
+            continuousMgHr: this.continuousMgHr
+        };
+    }
+
+    static fromJSON(obj) {
+        return new DoseEvent(obj.timeInMinutes, obj.bolusMg, obj.continuousMgHr);
     }
 }
 
@@ -417,29 +447,65 @@ class SimulationResult {
         return this.timePoints.length > 0 ? this.timePoints[this.timePoints.length - 1].timeInMinutes : 0;
     }
     
+    // Active continuous infusion rate (mg/hr) at a given time, as a step
+    // function defined by the dose events (latest event with time <= t).
+    activeInfusionRateAt(timeInMinutes) {
+        if (!this.doseEvents || this.doseEvents.length === 0) return 0.0;
+        let rate = 0.0;
+        for (const event of this.doseEvents) {
+            if (event.timeInMinutes <= timeInMinutes) {
+                rate = event.continuousMgHr;
+            }
+        }
+        return rate;
+    }
+
+    // Bolus dose (mg) administered at a given time, 0 if no dose event there.
+    bolusAt(timeInMinutes) {
+        if (!this.doseEvents || this.doseEvents.length === 0) return 0.0;
+        let bolus = 0.0;
+        for (const event of this.doseEvents) {
+            if (Math.abs(event.timeInMinutes - timeInMinutes) < 0.5) {
+                bolus += event.bolusMg;
+            }
+        }
+        return bolus;
+    }
+
     toCSV() {
         const csvLines = [];
-        
+
+        // Per-time-point dose columns enable secondary use of the exported data:
+        // bolus and the active continuous infusion rate (step function).
+        const doseHeader = "Bolus(mg),Infusion Rate(mg/hr),Infusion Rate(mg/min)";
+
+        const doseColumns = (timeInMinutes) => {
+            const bolus = this.bolusAt(timeInMinutes);
+            const rateMgHr = this.activeInfusionRateAt(timeInMinutes);
+            const rateMgMin = rateMgHr / 60.0;
+            return `${bolus.toFixed(2)},${rateMgHr.toFixed(2)},${rateMgMin.toFixed(4)}`;
+        };
+
         if (this.patient) {
             const patientInfo = `Patient ID:${this.patient.id},Age:${this.patient.age} years,Weight:${this.patient.weight} kg,Height:${this.patient.height} cm,Sex:${SexType.displayName(this.patient.sex)},ASA-PS:${AsapsType.displayName(this.patient.asaPS)},Opioid Co-admin:${OpioidType.displayName(this.patient.opioidCoadmin)},Anesthesia Start:${this.patient.formattedStartTime}`;
             csvLines.push(patientInfo);
-            
-            csvLines.push("Time,Predicted Plasma Conc.(µg/mL),Predicted Effect-site Conc.(µg/mL),Predicted BIS Value");
-            
+
+            csvLines.push(`Time,${doseHeader},Predicted Plasma Conc.(µg/mL),Predicted Effect-site Conc.(µg/mL),Predicted BIS Value`);
+
             for (const tp of this.timePoints) {
                 const clockTime = tp.formattedClockTime(this.patient);
-                const line = `${clockTime},${tp.plasmaConcentration.toFixed(3)},${tp.effectSiteConcentration.toFixed(3)},${tp.bisValueString}`;
+                const line = `${clockTime},${doseColumns(tp.timeInMinutes)},${tp.plasmaConcentration.toFixed(3)},${tp.effectSiteConcentration.toFixed(3)},${tp.bisValueString}`;
                 csvLines.push(line);
             }
         } else {
-            csvLines.push("Time(min),Predicted Plasma Conc.(µg/mL),Predicted Effect-site Conc.(µg/mL),Predicted BIS Value");
-            
+            csvLines.push(`Time(min),${doseHeader},Predicted Plasma Conc.(µg/mL),Predicted Effect-site Conc.(µg/mL),Predicted BIS Value`);
+
             for (const tp of this.timePoints) {
-                const line = `${tp.timeInMinutes},${tp.plasmaConcentration.toFixed(3)},${tp.effectSiteConcentration.toFixed(3)},${tp.bisValueString}`;
+                const line = `${tp.timeInMinutes},${doseColumns(tp.timeInMinutes)},${tp.plasmaConcentration.toFixed(3)},${tp.effectSiteConcentration.toFixed(3)},${tp.bisValueString}`;
                 csvLines.push(line);
             }
         }
-        
+
         return csvLines.join("\n");
     }
 }
@@ -503,6 +569,48 @@ class AppState {
     }
 }
 
+// Session serialization (save/load full input state as JSON)
+const TCISession = {
+    FORMAT: "propofol-tci-session",
+    VERSION: "1.0",
+
+    // Build a plain object ready to be JSON.stringify-ed.
+    build(patient, doseEvents, appVersion = "") {
+        return {
+            format: this.FORMAT,
+            version: this.VERSION,
+            appVersion: appVersion,
+            savedAt: new Date().toISOString(),
+            patient: patient ? patient.toJSON() : null,
+            doseEvents: (doseEvents || []).map(e => e.toJSON())
+        };
+    },
+
+    // Parse JSON text into { patient, doseEvents }. Throws on invalid input.
+    parse(text) {
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error("Invalid JSON file: " + e.message);
+        }
+
+        if (!data || data.format !== this.FORMAT) {
+            throw new Error("This file is not a valid Propofol TCI session file.");
+        }
+        if (!data.patient) {
+            throw new Error("Session file does not contain patient information.");
+        }
+
+        const patient = Patient.fromJSON(data.patient);
+        const doseEvents = Array.isArray(data.doseEvents)
+            ? data.doseEvents.map(e => DoseEvent.fromJSON(e))
+            : [];
+
+        return { patient, doseEvents, savedAt: data.savedAt || null, appVersion: data.appVersion || "" };
+    }
+};
+
 // Export for use in other modules
 if (typeof window !== 'undefined') {
     window.SexType = SexType;
@@ -520,6 +628,7 @@ if (typeof window !== 'undefined') {
     window.InductionSnapshot = InductionSnapshot;
     window.ProtocolResult = ProtocolResult;
     window.AppState = AppState;
+    window.TCISession = TCISession;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>Propofol TCI TIVA V2.3.0</title>
+    <title>Propofol TCI TIVA V2.4.0</title>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#010409">
@@ -67,7 +67,7 @@
         <!-- Compact Header -->
         <header class="app-header">
             <div class="header-left">
-                <h1>Propofol TCI <span class="version">V2.3</span></h1>
+                <h1>Propofol TCI <span class="version">V2.4</span></h1>
             </div>
             <div class="header-right">
                 <button id="editPatientBtn" class="btn-icon" aria-label="Patient Settings">
@@ -385,6 +385,9 @@
                         <div class="action-bar">
                             <button id="runSimulationBtn" class="btn btn-primary btn-action">Run Simulation</button>
                             <button id="exportCsvBtn" class="btn btn-secondary btn-action">Export CSV</button>
+                            <button id="saveSessionBtn" class="btn btn-secondary btn-action">Save Session</button>
+                            <button id="loadSessionBtn" class="btn btn-secondary btn-action">Load Session</button>
+                            <input type="file" id="loadSessionInput" accept=".json,application/json" style="display:none">
                         </div>
 
                         <!-- Simulation Results -->
