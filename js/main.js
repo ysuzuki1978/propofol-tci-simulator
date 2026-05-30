@@ -987,7 +987,7 @@ class MainApplicationController {
                 return;
             }
             const doseEvents = this.monitoringEngine.getDoseEvents();
-            const session = TCISession.build(patient, doseEvents, 'V2.4.0', this.locCe);
+            const session = TCISession.build(patient, doseEvents, 'V2.5.0', this.locCe);
             const content = JSON.stringify(session, null, 2);
 
             const now = new Date();
