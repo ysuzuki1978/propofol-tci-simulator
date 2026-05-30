@@ -987,7 +987,7 @@ class MainApplicationController {
                 return;
             }
             const doseEvents = this.monitoringEngine.getDoseEvents();
-            const session = TCISession.build(patient, doseEvents, 'V2.4.0');
+            const session = TCISession.build(patient, doseEvents, 'V2.4.0', this.locCe);
             const content = JSON.stringify(session, null, 2);
 
             const now = new Date();
@@ -1022,7 +1022,7 @@ class MainApplicationController {
     }
 
     applySession(text) {
-        const { patient, doseEvents } = TCISession.parse(text);
+        const { patient, doseEvents, locCe } = TCISession.parse(text);
 
         // Validate restored patient before applying.
         const patientValidation = patient.validate();
@@ -1043,6 +1043,15 @@ class MainApplicationController {
         this.protocolEngine.setPatient(patient);
         this.advancedProtocolEngine.setPatient(patient);
         this.monitoringEngine.setPatient(patient);
+
+        // Restore LOC Ce from induction (null when induction was skipped).
+        this.locCe = locCe;
+        if (locCe !== null) {
+            document.getElementById('locCeDisplay').classList.remove('hidden');
+            document.getElementById('locCeValue').textContent = locCe.toFixed(3);
+        } else {
+            document.getElementById('locCeDisplay').classList.add('hidden');
+        }
 
         // Restore dose events.
         this.monitoringEngine.clearDoseEvents();

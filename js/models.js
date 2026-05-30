@@ -575,18 +575,20 @@ const TCISession = {
     VERSION: "1.0",
 
     // Build a plain object ready to be JSON.stringify-ed.
-    build(patient, doseEvents, appVersion = "") {
+    // locCe: number recorded at LOC during induction, or null if induction was skipped.
+    build(patient, doseEvents, appVersion = "", locCe = null) {
         return {
             format: this.FORMAT,
             version: this.VERSION,
             appVersion: appVersion,
             savedAt: new Date().toISOString(),
+            locCe: locCe !== null ? locCe : null,
             patient: patient ? patient.toJSON() : null,
             doseEvents: (doseEvents || []).map(e => e.toJSON())
         };
     },
 
-    // Parse JSON text into { patient, doseEvents }. Throws on invalid input.
+    // Parse JSON text into { patient, doseEvents, locCe }. Throws on invalid input.
     parse(text) {
         let data;
         try {
@@ -606,8 +608,10 @@ const TCISession = {
         const doseEvents = Array.isArray(data.doseEvents)
             ? data.doseEvents.map(e => DoseEvent.fromJSON(e))
             : [];
+        // locCe is null when induction was skipped (field absent in older sessions treated as null).
+        const locCe = (typeof data.locCe === 'number') ? data.locCe : null;
 
-        return { patient, doseEvents, savedAt: data.savedAt || null, appVersion: data.appVersion || "" };
+        return { patient, doseEvents, locCe, savedAt: data.savedAt || null, appVersion: data.appVersion || "" };
     }
 };
 
