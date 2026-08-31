@@ -524,7 +524,10 @@
             <form id="doseForm" class="modal-body">
                 <div class="form-group">
                     <label for="doseTime">Time</label>
-                    <input type="time" id="doseTime" class="time-input" required>
+                    <div class="time-input-row">
+                        <input type="time" id="doseTime" class="time-input" required>
+                        <button type="button" id="doseTimeNowBtn" class="btn btn-secondary time-now-btn">Now</button>
+                    </div>
                     <small class="form-hint">Start: <span id="anesthesiaStartReference">08:00</span></small>
                 </div>
 

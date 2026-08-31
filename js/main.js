@@ -201,6 +201,7 @@ class MainApplicationController {
         // Dose modal
         document.getElementById('closeDoseModal').addEventListener('click', () => this.hideDoseModal());
         document.getElementById('cancelDoseAdd').addEventListener('click', () => this.hideDoseModal());
+        document.getElementById('doseTimeNowBtn').addEventListener('click', () => this.setDoseTimeToNow());
         document.getElementById('doseForm').addEventListener('submit', (e) => this.addDoseEvent(e));
 
         // Modal backdrop clicks
@@ -386,6 +387,13 @@ class MainApplicationController {
 
     hideDoseModal() {
         document.getElementById('doseModal').classList.remove('active');
+    }
+
+    setDoseTimeToNow() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('doseTime').value = `${hh}:${mm}`;
     }
 
     // =============================================

@@ -1159,6 +1159,22 @@ input, select, textarea {
     border-color: var(--primary);
 }
 
+.time-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.time-input-row .time-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.time-now-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .form-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
