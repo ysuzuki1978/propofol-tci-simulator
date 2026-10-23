@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-10-23
+
+### Added
+- Bottom tab bar for Induction / Protocol / Monitoring, with a fixed strip of Ce, LOC Ce and target Ce above every step
+- Pinch zoom, pan, double-tap reset and zoom buttons on the three charts (`js/chart-interaction.js`); legend chips show the values at the cursor
+- `Now` button beside the anesthesia start time in the patient settings
+
+### Changed
+- Chart.js 3.9.1 and the date-fns adapter are bundled in `js/vendor/` instead of loaded from a CDN
+- Version strings (package, manifest, service worker, title, header, saved sessions) are all V2.6.0
+
+### Fixed
+- Elapsed time in the real-time induction stayed at `00:00` (minutes were formatted as seconds)
+
 ## [2.0.0] - 2026-03-14
 
 ### Added

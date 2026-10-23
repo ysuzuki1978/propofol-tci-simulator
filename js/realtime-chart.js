@@ -26,7 +26,7 @@ class RealtimeChart {
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Effect-site Concentration',
+                    label: 'Ce', unit: '\u00B5g/mL',
                     data: [],
                     borderColor: '#1D9E75',
                     backgroundColor: 'rgba(29, 158, 117, 0.1)',
@@ -36,7 +36,7 @@ class RealtimeChart {
                     pointHoverRadius: 4,
                     yAxisID: 'y'
                 }, {
-                    label: 'BIS Value',
+                    label: 'BIS', unit: '', digits: 0,
                     data: [],
                     borderColor: '#BA7517',
                     backgroundColor: 'rgba(186, 117, 23, 0.1)',
@@ -57,19 +57,14 @@ class RealtimeChart {
                     mode: 'index',
                     intersect: false,
                 },
+                // A finger gets no tooltip: it outlives the touch and covers the
+                // curves. A tap moves the cursor and the legend chips read it.
+                ...(ChartInteraction.COARSE_POINTER ? { events: [] } : {}),
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Real-time Effect-site Concentration & BIS Value',
-                        color: '#8B949E',
-                        font: { size: 12 }
-                    },
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: { color: '#8B949E', boxWidth: 12, font: { size: 11 } }
-                    },
+                    // The legend is HTML chips above the chart (chart-interaction.js)
+                    legend: { display: false },
                     tooltip: {
+                        enabled: !ChartInteraction.COARSE_POINTER,
                         mode: 'index',
                         intersect: false,
                         backgroundColor: '#161B22',
@@ -97,13 +92,11 @@ class RealtimeChart {
                     x: {
                         type: 'linear',
                         position: 'bottom',
-                        title: {
-                            display: true,
-                            text: 'Time (seconds)',
-                            color: '#8B949E'
-                        },
                         ticks: {
                             color: '#8B949E',
+                            font: { size: 11 },
+                            maxRotation: 0,
+                            maxTicksLimit: 7,
                             callback: function(value) {
                                 // Convert seconds to MM:SS format
                                 const minutes = Math.floor(value / 60);
@@ -117,13 +110,8 @@ class RealtimeChart {
                         type: 'linear',
                         display: true,
                         position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Effect-site Concentration (μg/mL)',
-                            color: '#8B949E'
-                        },
                         beginAtZero: true,
-                        ticks: { color: '#8B949E' },
+                        ticks: { color: '#8B949E', font: { size: 11 } },
                         grid: {
                             drawOnChartArea: true,
                             color: 'rgba(255,255,255,0.06)',
@@ -133,14 +121,9 @@ class RealtimeChart {
                         type: 'linear',
                         display: true,
                         position: 'right',
-                        title: {
-                            display: true,
-                            text: 'BIS Value',
-                            color: '#8B949E'
-                        },
                         min: 0,
                         max: 100,
-                        ticks: { color: '#8B949E' },
+                        ticks: { color: '#8B949E', font: { size: 11 } },
                         grid: {
                             drawOnChartArea: false,
                         },
