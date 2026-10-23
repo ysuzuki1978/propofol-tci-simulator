@@ -1,5 +1,5 @@
 /**
- * Main Application Controller for Propofol TCI TIVA V2.1.1
+ * Main Application Controller for Propofol TCI TIVA V2.6.0
  * Seamless 3-step workflow: Induction -> Protocol -> Monitoring
  * Based on Eleveld et al. (2018) BJA PK/PD model
  */
@@ -16,6 +16,11 @@ class MainApplicationController {
         this.realtimeChart = null;
         this.protocolChart = null;
         this.monitoringChart = null;
+
+        // Zoom, pan, cursor and legend for each chart (js/chart-interaction.js)
+        this.realtimeView = null;
+        this.protocolView = null;
+        this.monitoringView = null;
 
         // Wizard state
         this.currentStep = 0;
@@ -42,7 +47,7 @@ class MainApplicationController {
     }
 
     initialize() {
-        console.log('Initializing Propofol TCI TIVA V2.1.1');
+        console.log('Initializing Propofol TCI TIVA V2.6.0');
 
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');
@@ -55,6 +60,7 @@ class MainApplicationController {
         this.setupInductionCallbacks();
         this.initializeRealtimeChart();
         this.updatePatientDisplay();
+        this.updateSummaryTarget();
 
         console.log('Application initialized successfully');
     }
@@ -107,6 +113,8 @@ class MainApplicationController {
         viewport.addEventListener('touchstart', (e) => {
             const tag = e.target.tagName;
             if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'CANVAS') return;
+            // A horizontal drag on a chart pans or zooms it; it is not a swipe between steps.
+            if (e.target.closest('.chart-container')) return;
 
             this.touchStartX = e.touches[0].clientX;
             this.isSwiping = false;
@@ -142,15 +150,26 @@ class MainApplicationController {
         if (step < 0 || step >= this.totalSteps) return;
 
         this.currentStep = step;
-        const track = document.getElementById('wizardTrack');
-        const offset = -(step * 100 / this.totalSteps);
-        track.style.transform = `translateX(${offset}%)`;
+
+        // One step is shown at a time.
+        document.querySelectorAll('.wizard-step').forEach((section, i) => {
+            section.classList.toggle('active', i === step);
+        });
 
         // Update tab states
         document.querySelectorAll('.step-tab').forEach((tab, i) => {
             tab.classList.toggle('active', i === step);
             tab.classList.toggle('completed', i < step);
+            tab.setAttribute('aria-selected', String(i === step));
         });
+
+        // A chart drawn while its step was hidden has no size to lay out
+        // against until the step is shown.
+        const shown = [this.realtimeChart && this.realtimeChart.chart, this.protocolChart, this.monitoringChart][step];
+        if (shown) {
+            shown.resize();
+            [this.realtimeView, this.protocolView, this.monitoringView][step].apply();
+        }
 
         // Trigger step-specific actions
         if (step === 1) {
@@ -190,6 +209,11 @@ class MainApplicationController {
         // Safety margin change
         document.getElementById('safetyMargin').addEventListener('change', () => this.updateTargetCeFromMargin());
 
+        // The target in the summary strip follows the field it summarises.
+        ['input', 'change'].forEach(evt => {
+            document.getElementById('targetConcentration').addEventListener(evt, () => this.updateSummaryTarget());
+        });
+
         // Step 3: Monitoring
         document.getElementById('addDoseBtn').addEventListener('click', () => this.showDoseModal());
         document.getElementById('runSimulationBtn').addEventListener('click', () => this.runMonitoringSimulation());
@@ -202,6 +226,7 @@ class MainApplicationController {
         document.getElementById('closeDoseModal').addEventListener('click', () => this.hideDoseModal());
         document.getElementById('cancelDoseAdd').addEventListener('click', () => this.hideDoseModal());
         document.getElementById('doseTimeNowBtn').addEventListener('click', () => this.setDoseTimeToNow());
+        document.getElementById('startTimeNowBtn').addEventListener('click', () => this.setStartTimeToNow());
         document.getElementById('doseForm').addEventListener('submit', (e) => this.addDoseEvent(e));
 
         // Modal backdrop clicks
@@ -337,6 +362,15 @@ class MainApplicationController {
     initializeRealtimeChart() {
         try {
             this.realtimeChart = new RealtimeChart('inductionRealtimeChart', 300);
+            this.realtimeView = new ChartInteraction({
+                host: document.getElementById('inductionRealtimeChart').parentElement,
+                getChart: () => this.realtimeChart && this.realtimeChart.chart,
+                fitAxes: ['y'],   // BIS keeps its fixed 0-100 axis
+                minSpan: 6,       // seconds: about ten samples at one every 0.6 s
+                latest: 'Latest',
+                formatX: (seconds) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
+            });
+            this.realtimeView.sync();
             console.log('Realtime chart initialized successfully');
         } catch (error) {
             console.error('Failed to initialize realtime chart:', error);
@@ -387,6 +421,14 @@ class MainApplicationController {
 
     hideDoseModal() {
         document.getElementById('doseModal').classList.remove('active');
+    }
+
+    /** The anesthesia start field in the patient editor, set to the wall clock. */
+    setStartTimeToNow() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('editAnesthesiaStart').value = `${hh}:${mm}`;
     }
 
     setDoseTimeToNow() {
@@ -458,6 +500,8 @@ class MainApplicationController {
         // Clear the realtime chart when starting new induction
         if (this.realtimeChart) {
             this.realtimeChart.clear();
+            this.realtimeView.clear();
+            this.realtimeView.refresh();
         }
 
         if (this.inductionEngine.start(this.appState.patient, bolus, continuous)) {
@@ -485,8 +529,7 @@ class MainApplicationController {
 
         this.locCe = state.effectSiteConcentration;
 
-        // Update LOC display in Step 1
-        document.getElementById('locCeDisplay').classList.remove('hidden');
+        // Update LOC display (summary strip)
         document.getElementById('locCeValue').textContent = this.locCe.toFixed(3);
 
         // Also record as a snapshot
@@ -503,8 +546,9 @@ class MainApplicationController {
         document.getElementById('plasmaConcentration').textContent = state.plasmaConcentration.toFixed(3);
         document.getElementById('effectConcentration').textContent = state.effectSiteConcentration.toFixed(3);
 
-        // Format elapsed time as MM:SS
-        const totalSec = Math.floor(state.elapsedTime);
+        // Format elapsed time as MM:SS. The engine counts minutes; read as
+        // seconds this stayed at 00:00 for the first minute of every induction.
+        const totalSec = Math.floor(state.elapsedTime * 60);
         const mm = Math.floor(totalSec / 60).toString().padStart(2, '0');
         const ss = (totalSec % 60).toString().padStart(2, '0');
         document.getElementById('elapsedTime').textContent = `${mm}:${ss}`;
@@ -517,6 +561,7 @@ class MainApplicationController {
                 state.effectSiteConcentration,
                 state.bisValue
             );
+            this.realtimeView.refresh();
         }
     }
 
@@ -582,6 +627,13 @@ class MainApplicationController {
 
         // Auto-fill the target concentration input
         document.getElementById('targetConcentration').value = targetCe.toFixed(1);
+        this.updateSummaryTarget();
+    }
+
+    /** The target in the summary strip is the value the protocol will be run against. */
+    updateSummaryTarget() {
+        const target = parseFloat(document.getElementById('targetConcentration').value);
+        document.getElementById('summaryTarget').textContent = Number.isFinite(target) ? target.toFixed(1) : '---';
     }
 
     optimizeProtocol() {
@@ -651,31 +703,32 @@ class MainApplicationController {
             return ct.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
         });
 
+        const coarse = ChartInteraction.COARSE_POINTER;
         this.protocolChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Cp',
+                        label: 'Cp', unit: '\u00B5g/mL',
                         data: chartData.plasmaConcentrations,
                         borderColor: '#3266AD',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
-                        label: 'Ce',
+                        label: 'Ce', unit: '\u00B5g/mL',
                         data: chartData.effectSiteConcentrations,
                         borderColor: '#1D9E75',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 2
                     },
                     {
-                        label: 'Target',
+                        label: 'Target', unit: '\u00B5g/mL',
                         data: chartData.targetLine,
                         borderColor: 'rgba(216,90,48,0.8)',
                         borderDash: [5, 5], tension: 0, pointRadius: 0, borderWidth: 1.5, fill: false
                     },
                     {
-                        label: 'Rate',
+                        label: 'Rate', unit: 'mg/hr', digits: 0,
                         data: chartData.infusionRates,
                         borderColor: '#9B72B0',
                         tension: 0.1, pointRadius: 0, borderWidth: 1.5, fill: false,
@@ -687,28 +740,40 @@ class MainApplicationController {
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false, axis: 'x' },
+                // A finger gets no tooltip: it outlives the touch and covers the
+                // curves. A tap moves the cursor and the legend chips read it.
+                ...(coarse ? { events: [] } : {}),
                 plugins: {
                     tooltip: {
-                        events: ['click', 'touchstart'],
+                        enabled: !coarse,
                         padding: 10, cornerRadius: 8,
                         titleFont: { size: 12 }, bodyFont: { size: 11 },
                         backgroundColor: '#161B22', titleColor: '#E6EDF3', bodyColor: '#C9D1D9',
                         borderColor: '#30363D', borderWidth: 1
                     },
-                    legend: { display: true, labels: { boxWidth: 12, font: { size: 11 }, color: '#8B949E' } }
+                    legend: { display: false }   // HTML chips above the chart
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#8B949E' }, ticks: { color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 11 }, color: '#8B949E', maxRotation: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                    y: { beginAtZero: true, ticks: { color: '#8B949E', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
                     y1: {
                         type: 'linear', display: true, position: 'right', beginAtZero: true,
-                        title: { display: true, text: 'Rate (mg/hr)', font: { size: 10 }, color: '#8B949E' },
-                        ticks: { color: '#8B949E' },
+                        ticks: { color: '#8B949E', font: { size: 11 } },
                         grid: { drawOnChartArea: false }
                     }
                 }
             }
         });
+
+        this.protocolView = this.protocolView || new ChartInteraction({
+            host: document.getElementById('protocolChart').parentElement,
+            getChart: () => this.protocolChart,
+            fitAxes: ['y', 'y1'],
+            latest: 'End',
+            formatX: (x, i) => this.protocolChart.data.labels[i]
+        });
+        this.protocolView.clear();
+        this.protocolView.sync();
     }
 
     updateProtocolTable(schedule) {
@@ -910,19 +975,20 @@ class MainApplicationController {
         const chartData = this.monitoringEngine.getChartData();
         if (!chartData) return;
 
+        const coarse = ChartInteraction.COARSE_POINTER;
         this.monitoringChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: chartData.labels,
                 datasets: [
                     {
-                        label: 'Cp',
+                        label: 'Cp', unit: '\u00B5g/mL',
                         data: chartData.plasmaData,
                         borderColor: '#3266AD',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 1.5
                     },
                     {
-                        label: 'Ce',
+                        label: 'Ce', unit: '\u00B5g/mL',
                         data: chartData.effectData,
                         borderColor: '#1D9E75',
                         fill: false, tension: 0.1, pointRadius: 0, borderWidth: 2
@@ -933,22 +999,33 @@ class MainApplicationController {
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false, axis: 'x' },
+                ...(coarse ? { events: [] } : {}),
                 plugins: {
                     tooltip: {
-                        events: ['click', 'touchstart'],
+                        enabled: !coarse,
                         padding: 10, cornerRadius: 8,
                         titleFont: { size: 12 }, bodyFont: { size: 11 },
                         backgroundColor: '#161B22', titleColor: '#E6EDF3', bodyColor: '#C9D1D9',
                         borderColor: '#30363D', borderWidth: 1
                     },
-                    legend: { labels: { boxWidth: 12, font: { size: 11 }, color: '#8B949E' } }
+                    legend: { display: false }
                 },
                 scales: {
-                    x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Conc (ug/mL)', font: { size: 10 }, color: '#8B949E' }, ticks: { color: '#8B949E' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                    x: { ticks: { maxTicksLimit: 8, font: { size: 11 }, color: '#8B949E', maxRotation: 0 }, grid: { color: 'rgba(255,255,255,0.06)' } },
+                    y: { beginAtZero: true, ticks: { color: '#8B949E', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
                 }
             }
         });
+
+        this.monitoringView = this.monitoringView || new ChartInteraction({
+            host: document.getElementById('monitoringChart').parentElement,
+            getChart: () => this.monitoringChart,
+            fitAxes: ['y'],
+            latest: 'End',
+            formatX: (x, i) => this.monitoringChart.data.labels[i]
+        });
+        this.monitoringView.clear();
+        this.monitoringView.sync();
     }
 
     // =============================================
@@ -995,7 +1072,7 @@ class MainApplicationController {
                 return;
             }
             const doseEvents = this.monitoringEngine.getDoseEvents();
-            const session = TCISession.build(patient, doseEvents, 'V2.5.0', this.locCe);
+            const session = TCISession.build(patient, doseEvents, 'V2.6.0', this.locCe);
             const content = JSON.stringify(session, null, 2);
 
             const now = new Date();
@@ -1054,12 +1131,7 @@ class MainApplicationController {
 
         // Restore LOC Ce from induction (null when induction was skipped).
         this.locCe = locCe;
-        if (locCe !== null) {
-            document.getElementById('locCeDisplay').classList.remove('hidden');
-            document.getElementById('locCeValue').textContent = locCe.toFixed(3);
-        } else {
-            document.getElementById('locCeDisplay').classList.add('hidden');
-        }
+        document.getElementById('locCeValue').textContent = locCe !== null ? locCe.toFixed(3) : '---';
 
         // Restore dose events.
         this.monitoringEngine.clearDoseEvents();

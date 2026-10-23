@@ -1,4 +1,4 @@
-# Propofol TCI TIVA V2.3 - Target Controlled Infusion Simulator
+# Propofol TCI TIVA V2.6 - Target Controlled Infusion Simulator
 
 ## Overview
 
@@ -25,6 +25,14 @@ A Progressive Web Application for Target-Controlled Infusion (TCI) simulation of
 - **iPhone-optimized PWA**: Offline capability, dark OR-monitor theme, safe-area support
 
 ## Version History
+
+### V2.6 (2026-10-23)
+- **Phone layout**: The Induction / Protocol / Monitoring steps are a fixed bottom tab bar. Ce (with Cp and elapsed time), the LOC Ce and the target Ce are pinned above every step.
+- **Chart interaction**: Pinch to zoom, drag to pan, double-tap or `Fit` to reset, `+` / `−` buttons, on all three charts. The y axis follows the visible window. On touch screens there is no tooltip; the legend chips show the values at the cursor.
+- **Anesthesia start**: A `Now` button beside the start time in the patient settings (the dose time already had one).
+- **Fixes**: The elapsed time in the real-time induction no longer stays at `00:00` (minutes were formatted as seconds). Form fields are at least 16px so Safari does not zoom the page.
+- **Offline**: Chart.js and its date adapter are bundled (`js/vendor/`) instead of loaded from a CDN.
+- No change to the pharmacokinetic model, constants or integration.
 
 ### V2.3 (2026-03-24)
 - **RK4 Timestep Unification**: Standardized RK4 integration timesteps across all engines

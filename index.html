@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>Propofol TCI TIVA V2.5.0</title>
+    <title>Propofol TCI TIVA V2.6.0</title>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#010409">
@@ -19,8 +19,8 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="js/vendor/chart.min.js"></script>
+    <script src="js/vendor/chartjs-adapter-date-fns.bundle.min.js"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
@@ -67,7 +67,7 @@
         <!-- Compact Header -->
         <header class="app-header">
             <div class="header-left">
-                <h1>Propofol TCI <span class="version">V2.5</span></h1>
+                <h1>Propofol TCI <span class="version">V2.6</span></h1>
             </div>
             <div class="header-right">
                 <button id="editPatientBtn" class="btn-icon" aria-label="Patient Settings">
@@ -77,23 +77,26 @@
             </div>
         </header>
 
-        <!-- Step Progress Bar -->
-        <nav class="step-nav">
-            <button class="step-tab active" data-step="0">
-                <span class="step-num">1</span>
-                <span class="step-label">Induction</span>
-            </button>
-            <span class="step-arrow">&#9654;</span>
-            <button class="step-tab" data-step="1">
-                <span class="step-num">2</span>
-                <span class="step-label">Protocol</span>
-            </button>
-            <span class="step-arrow">&#9654;</span>
-            <button class="step-tab" data-step="2">
-                <span class="step-num">3</span>
-                <span class="step-label">Monitoring</span>
-            </button>
-        </nav>
+        <!-- The values this application exists to give, pinned above every step:
+             the current Ce, the Ce at loss of consciousness, and the target the
+             protocol is aimed at. -->
+        <section class="summary-strip" aria-label="Current values">
+            <div class="sum-cell sum-primary">
+                <span class="sum-label">Effect-site Ce</span>
+                <span class="sum-reading"><span id="effectConcentration" class="sum-value">---</span><small>&#956;g/mL</small></span>
+                <span class="sum-sub">Cp <span id="plasmaConcentration">---</span> &middot; <span id="elapsedTime" class="time-mono">00:00</span></span>
+            </div>
+            <div class="sum-cell">
+                <span class="sum-label">LOC Ce</span>
+                <span class="sum-reading"><span id="locCeValue" class="sum-value">---</span><small>&#956;g/mL</small></span>
+                <span class="sum-sub">sleep onset</span>
+            </div>
+            <div class="sum-cell">
+                <span class="sum-label">Target Ce</span>
+                <span class="sum-reading"><span id="summaryTarget" class="sum-value">---</span><small>&#956;g/mL</small></span>
+                <span class="sum-sub">protocol goal</span>
+            </div>
+        </section>
 
         <!-- Wizard Viewport -->
         <div class="wizard-viewport">
@@ -102,7 +105,7 @@
                 <!-- ============================================ -->
                 <!-- STEP 1: Real-time Induction Prediction        -->
                 <!-- ============================================ -->
-                <section class="wizard-step" data-step="0">
+                <section class="wizard-step active" data-step="0" role="tabpanel">
                     <div class="step-content">
                         <div class="step-title-bar">
                             <h2>Real-time Induction Prediction</h2>
@@ -138,39 +141,6 @@
                             <button id="recordLOCBtn" class="btn btn-warning btn-action hidden">LOC</button>
                         </div>
 
-                        <!-- Concentration Display -->
-                        <div class="concentration-display">
-                            <div class="conc-card">
-                                <div class="conc-label">Plasma Cp</div>
-                                <div class="conc-value-row">
-                                    <span id="plasmaConcentration" class="conc-value">0.000</span>
-                                    <span class="conc-unit">&#956;g/mL</span>
-                                </div>
-                            </div>
-                            <div class="conc-card conc-card-primary">
-                                <div class="conc-label">Effect-site Ce</div>
-                                <div class="conc-value-row">
-                                    <span id="effectConcentration" class="conc-value">0.000</span>
-                                    <span class="conc-unit">&#956;g/mL</span>
-                                </div>
-                            </div>
-                            <div class="conc-card">
-                                <div class="conc-label">Elapsed</div>
-                                <div class="conc-value-row">
-                                    <span id="elapsedTime" class="conc-value time-mono">00:00</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- LOC Ce Display (shown after LOC recorded) -->
-                        <div id="locCeDisplay" class="loc-ce-display hidden">
-                            <div class="loc-ce-card">
-                                <span class="loc-ce-label">LOC Ce (Sleep Onset)</span>
-                                <span id="locCeValue" class="loc-ce-value">---</span>
-                                <span class="loc-ce-unit">&#956;g/mL</span>
-                            </div>
-                        </div>
-
                         <!-- Real-time Chart -->
                         <div class="chart-container">
                             <canvas id="inductionRealtimeChart"></canvas>
@@ -182,19 +152,13 @@
                             <div id="snapshotsList" class="snapshots-list"></div>
                         </div>
 
-                        <!-- Next Step Button -->
-                        <div class="step-nav-bottom">
-                            <button class="btn btn-primary btn-block btn-next" data-goto="1">
-                                Proceed to Protocol &#9654;
-                            </button>
-                        </div>
                     </div>
                 </section>
 
                 <!-- ============================================ -->
                 <!-- STEP 2: Protocol Optimization                 -->
                 <!-- ============================================ -->
-                <section class="wizard-step" data-step="1">
+                <section class="wizard-step" data-step="1" role="tabpanel">
                     <div class="step-content">
                         <div class="step-title-bar">
                             <h2>Step-down Protocol Optimization</h2>
@@ -343,22 +307,13 @@
                             </details>
                         </div>
 
-                        <!-- Navigation Buttons -->
-                        <div class="step-nav-bottom step-nav-dual">
-                            <button class="btn btn-secondary btn-back" data-goto="0">
-                                &#9664; Induction
-                            </button>
-                            <button id="transferToMonitoringBtn" class="btn btn-primary btn-next" data-goto="2">
-                                Monitoring &#9654;
-                            </button>
-                        </div>
                     </div>
                 </section>
 
                 <!-- ============================================ -->
                 <!-- STEP 3: Actual Dose Monitoring                -->
                 <!-- ============================================ -->
-                <section class="wizard-step" data-step="2">
+                <section class="wizard-step" data-step="2" role="tabpanel">
                     <div class="step-content">
                         <div class="step-title-bar">
                             <h2>Actual Dose Monitoring</h2>
@@ -414,17 +369,27 @@
                             </div>
                         </div>
 
-                        <!-- Navigation Buttons -->
-                        <div class="step-nav-bottom">
-                            <button class="btn btn-secondary btn-block btn-back" data-goto="1">
-                                &#9664; Back to Protocol
-                            </button>
-                        </div>
                     </div>
                 </section>
 
             </div><!-- /wizard-track -->
         </div><!-- /wizard-viewport -->
+
+        <!-- Steps: a tab bar at the bottom, where a thumb reaches it. -->
+        <nav class="step-nav" role="tablist" aria-label="Steps">
+            <button class="step-tab active" role="tab" data-step="0" aria-selected="true">
+                <span class="step-num">1</span>
+                <span class="step-label">Induction</span>
+            </button>
+            <button class="step-tab" role="tab" data-step="1" aria-selected="false">
+                <span class="step-num">2</span>
+                <span class="step-label">Protocol</span>
+            </button>
+            <button class="step-tab" role="tab" data-step="2" aria-selected="false">
+                <span class="step-num">3</span>
+                <span class="step-label">Monitoring</span>
+            </button>
+        </nav>
 
     </div><!-- /mainApp -->
 
@@ -504,7 +469,10 @@
 
                 <div class="form-group">
                     <label for="editAnesthesiaStart">Anesthesia Start Time</label>
-                    <input type="time" id="editAnesthesiaStart" class="time-input" value="08:00">
+                    <div class="time-input-row">
+                        <input type="time" id="editAnesthesiaStart" class="time-input" value="08:00">
+                        <button type="button" id="startTimeNowBtn" class="btn btn-secondary time-now-btn">Now</button>
+                    </div>
                 </div>
             </form>
             <div class="modal-footer">
@@ -568,6 +536,7 @@
     <script src="js/advanced-protocol-engine.js"></script>
     <script src="js/monitoring-engine.js"></script>
     <script src="js/realtime-chart.js"></script>
+    <script src="js/chart-interaction.js"></script>
     <script src="js/main.js"></script>
 
     <!-- PWA Update Notification Banner -->
