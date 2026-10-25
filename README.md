@@ -1,4 +1,4 @@
-# Propofol TCI TIVA V2.6 - Target Controlled Infusion Simulator
+# Propofol TCI TIVA V2.6.1 - Target Controlled Infusion Simulator
 
 ## Overview
 
@@ -25,6 +25,12 @@ A Progressive Web Application for Target-Controlled Infusion (TCI) simulation of
 - **iPhone-optimized PWA**: Offline capability, dark OR-monitor theme, safe-area support
 
 ## Version History
+
+### V2.6.1 (2026-10-25)
+- **Cleanup**: Removed the unused LSODA / VHAC code (`utils/lsoda.js`, `utils/vhac.js`) and functions with no callers, about 1,850 lines. The four engines share one RK4 step (`js/integrator.js`) and one PK setup (`js/pk-engine-base.js`).
+- **Ce in the protocol and monitoring steps changes**: the protocol paths integrated Ce with forward Euler and lagged the exact value (for 100 mg + 300 mg/h, Ce at 1 min was 4.0 % high in the optimizer path and 2.6 % low in the step-down simulation). All engines now match the exact solution to <1e-6. A step-down rate is applied from its own time point instead of one 0.1-min step later. The induction step is unchanged. Details: `CHANGELOG.md`.
+- **Tests**: `npm test` compares the engines with the exact (matrix exponential) solution, checks the Eleveld 2018 reference individual, and includes a negative control (a rate in mg/h taken as mg/min is flagged).
+- The fat-free-mass formula is unchanged in this release.
 
 ### V2.6 (2026-10-23)
 - **Phone layout**: The Induction / Protocol / Monitoring steps are a fixed bottom tab bar. Ce (with Cp and elapsed time), the LOC Ce and the target Ce are pinned above every step.
