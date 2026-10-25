@@ -331,7 +331,6 @@ class AdvancedProtocolEngine {
         
         for (let i = 0; i < numSteps; i++) {
             const currentTime = i * this.settings.timeStep;
-            const infusionRateMgMin = (currentRate) / 60.0;
             
             // Track adjustments per hour
             const hour = Math.floor(currentTime / 60);
@@ -373,6 +372,8 @@ class AdvancedProtocolEngine {
             
             // Update system state using RK4
             if (i < numSteps - 1) {
+                // The rate recorded for this time point (after any step-down above) applies to the step that follows
+                const infusionRateMgMin = currentRate / 60.0;
                 state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, this.settings.timeStep);
             }
         }

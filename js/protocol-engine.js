@@ -152,7 +152,6 @@ class ProtocolEngine {
         
         for (let i = 0; i < numSteps; i++) {
             const currentTime = i * this.settings.timeStep;
-            const infusionRateMgMin = currentRate / 60.0;
             
             // Calculate plasma concentration
             const plasmaConc = state.a1 / this.pkParams.v1;
@@ -194,6 +193,8 @@ class ProtocolEngine {
             
             // Update system state
             if (i < numSteps - 1) {
+                // The rate recorded for this time point (after any step-down above) applies to the step that follows
+                const infusionRateMgMin = currentRate / 60.0;
                 state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, this.settings.timeStep);
             }
         }
