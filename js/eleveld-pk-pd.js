@@ -172,6 +172,22 @@ class EleveldPKPDCalculator {
     }
     
     /**
+     * Model parameters for a patient, validated. Throws if the model returns
+     * values outside the checked ranges. Returns { pk, pd, ffm }.
+     */
+    static resolveParameters(patient) {
+        const modelParams = this.getModelParameters(patient);
+        const validation = this.validateParameters(modelParams);
+        if (!validation.isValid) {
+            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
+        }
+        if (typeof window !== 'undefined' && window.DEBUG) {
+            this.printParameters(patient, modelParams);
+        }
+        return modelParams;
+    }
+
+    /**
      * Validate calculated parameters
      */
     static validateParameters(params) {

@@ -10,23 +10,13 @@
  */
 
 
-class MonitoringEngine {
+class MonitoringEngine extends PKEngineBase {
     constructor() {
-        this.patient = null;
-        this.pkParams = null;
+        super();
         this.doseEvents = [];
         this.lastSimulationResult = null;
         this.calculationMethod = 'Unified RK4';
         this.precision = 0.1; // 0.1-minute time step
-    }
-
-    setPatient(patient) {
-        this.patient = patient;
-        this.pkParams = this.calculatePKParameters(patient);
-        // Set pkParams on patient object for unified access
-        this.patient.pkParams = this.pkParams;
-        this.patient.pdParams = this.pdParams;
-        console.log('Patient set for monitoring engine:', patient.id);
     }
 
     addDoseEvent(doseEvent) {
@@ -55,29 +45,6 @@ class MonitoringEngine {
     clearDoseEvents() {
         this.doseEvents = [];
         console.log('All dose events cleared');
-    }
-
-    calculatePKParameters(patient) {
-        console.log('Calculating PK parameters for monitoring with Eleveld model');
-        
-        // Use the Eleveld PK-PD calculator
-        const modelParams = EleveldPKPDCalculator.getModelParameters(patient);
-        
-        // Validate parameters
-        const validation = EleveldPKPDCalculator.validateParameters(modelParams);
-        if (!validation.isValid) {
-            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
-        }
-        
-        // Store PD parameters for BIS calculation
-        this.pdParams = modelParams.pd;
-        
-        console.log('Eleveld PK/PD parameters calculated successfully');
-        if (window.DEBUG) {
-            EleveldPKPDCalculator.printParameters(patient, modelParams);
-        }
-        
-        return modelParams.pk;
     }
 
     /**

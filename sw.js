@@ -13,6 +13,7 @@ const urlsToCache = [
   './js/main.js',
   './js/models.js',
   './js/integrator.js',
+  './js/pk-engine-base.js',
   './js/induction-engine.js',
   './js/protocol-engine.js',
   './js/advanced-protocol-engine.js',

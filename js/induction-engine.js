@@ -9,14 +9,12 @@
  * - Continuous and bolus dosing support
  */
 
-class InductionEngine {
+class InductionEngine extends PKEngineBase {
     constructor() {
+        super();
         this.isRunning = false;
         this.startTime = null;
         this.elapsedTime = 0;
-        this.patient = null;
-        this.pkParams = null;
-        this.pdParams = null;  // BIS calculation parameters
         this.state = { a1: 0, a2: 0, a3: 0, ce: 0 };
         this.bolusDose = 0;
         this.continuousDose = 0;
@@ -52,11 +50,7 @@ class InductionEngine {
 
         console.log('Starting induction simulation:', { bolusDose, continuousDose });
 
-        this.patient = patient;
-        this.pkParams = this.calculatePKParameters(patient);
-        // Set pkParams on patient object for unified access
-        this.patient.pkParams = this.pkParams;
-        this.patient.pdParams = this.pdParams;
+        this.setPatient(patient);
         this.bolusDose = bolusDose;
         this.continuousDose = continuousDose;
         this.state = { a1: bolusDose, a2: 0, a3: 0, ce: 0 };
@@ -124,41 +118,6 @@ class InductionEngine {
     }
 
 
-
-    calculatePKParameters(patient) {
-        console.log('Calculating PK parameters for induction with Eleveld model');
-        
-        // Use the Eleveld PK-PD calculator
-        const modelParams = EleveldPKPDCalculator.getModelParameters(patient);
-        
-        // Validate parameters
-        const validation = EleveldPKPDCalculator.validateParameters(modelParams);
-        if (!validation.isValid) {
-            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
-        }
-        
-        // Store PD parameters for BIS calculation
-        this.pdParams = modelParams.pd;
-        
-        console.log('Eleveld PK/PD parameters calculated successfully for induction');
-        
-        const pkParams = modelParams.pk;
-        
-        return {
-            v1: pkParams.v1,
-            v2: pkParams.v2,
-            v3: pkParams.v3,
-            cl: pkParams.cl,
-            q2: pkParams.q2,
-            q3: pkParams.q3,
-            ke0: pkParams.ke0,
-            k10: pkParams.k10,
-            k12: pkParams.k12,
-            k21: pkParams.k21,
-            k13: pkParams.k13,
-            k31: pkParams.k31
-        };
-    }
 
     getPlasmaConcentration() {
         return this.state.a1 / this.pkParams.v1;

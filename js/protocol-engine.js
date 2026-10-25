@@ -9,10 +9,9 @@
  * - Runge-Kutta integration for accurate simulation
  */
 
-class ProtocolEngine {
+class ProtocolEngine extends PKEngineBase {
     constructor() {
-        this.patient = null;
-        this.pkParams = null;
+        super();
         this.settings = {
             targetCe: 3.0,                 // Appropriate for propofol
             upperThreshold: 1.2,           // 120% of target
@@ -25,51 +24,8 @@ class ProtocolEngine {
         this.lastResult = null;
     }
 
-    setPatient(patient) {
-        this.patient = patient;
-        this.pkParams = this.calculatePKParameters(patient);
-        // Set pkParams on patient object for unified access
-        this.patient.pkParams = this.pkParams;
-        this.patient.pdParams = this.pdParams;
-    }
-
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-    }
-
-    calculatePKParameters(patient) {
-        console.log('Calculating PK parameters for protocol optimization with Eleveld model');
-        
-        // Use the Eleveld PK-PD calculator
-        const modelParams = EleveldPKPDCalculator.getModelParameters(patient);
-        
-        // Validate parameters
-        const validation = EleveldPKPDCalculator.validateParameters(modelParams);
-        if (!validation.isValid) {
-            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
-        }
-        
-        // Store PD parameters for BIS calculation
-        this.pdParams = modelParams.pd;
-        
-        console.log('Eleveld PK/PD parameters calculated successfully for protocol optimization');
-        
-        const pkParams = modelParams.pk;
-        
-        return {
-            v1: pkParams.v1,
-            v2: pkParams.v2,
-            v3: pkParams.v3,
-            cl: pkParams.cl,
-            q2: pkParams.q2,
-            q3: pkParams.q3,
-            ke0: pkParams.ke0,
-            k10: pkParams.k10,
-            k12: pkParams.k12,
-            k21: pkParams.k21,
-            k13: pkParams.k13,
-            k31: pkParams.k31
-        };
     }
 
     /**
