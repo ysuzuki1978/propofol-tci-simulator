@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx serve .",
     "serve": "python -m http.server 8000",
-    "test": "echo \"No tests specified\" && exit 0",
+    "test": "node test/run.js",
     "lint": "echo \"No linting configured\" && exit 0"
   },
   "keywords": [
