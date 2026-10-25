@@ -138,17 +138,9 @@ class ProtocolEngine {
         }
 
         console.log(`=== Complete Protocol Generation ===`);
-        
-        return this.generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate);
-    }
 
-    /**
-     * Generate complete protocol using RK4 (fallback method)
-     */
-    generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate) {
         const bolusState = this.calculateBolusInitialConcentration(bolusDoseMg);
-        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3 };
-        let currentCe = bolusState.effectSiteConc;
+        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3, ce: bolusState.effectSiteConc };
         let currentRate = initialContinuousRate;
         
         const timeSeriesData = [];
@@ -165,11 +157,7 @@ class ProtocolEngine {
             // Calculate plasma concentration
             const plasmaConc = state.a1 / this.pkParams.v1;
             
-            // Update effect site concentration
-            if (i > 0) {
-                const dCedt = this.pkParams.ke0 * (plasmaConc - currentCe);
-                currentCe = currentCe + this.settings.timeStep * dCedt;
-            }
+            const currentCe = state.ce;
             
             // Check threshold and adjust dosage
             if (currentCe >= this.settings.upperThreshold && 
@@ -206,7 +194,7 @@ class ProtocolEngine {
             
             // Update system state
             if (i < numSteps - 1) {
-                state = this.updateSystemStateRK4(state, infusionRateMgMin, this.settings.timeStep);
+                state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, this.settings.timeStep);
             }
         }
         
@@ -235,32 +223,17 @@ class ProtocolEngine {
      * Simulate bolus + continuous infusion for specific time
      */
     simulateBolusAndContinuous(bolusDoseMg, continuousRate, targetTime) {
-        return this.simulateBolusAndContinuousRK4(bolusDoseMg, continuousRate, targetTime);
-    }
-
-    /**
-     * Simulate bolus + continuous infusion using RK4 (fallback method)
-     */
-    simulateBolusAndContinuousRK4(bolusDoseMg, continuousRate, targetTime) {
         const bolusState = this.calculateBolusInitialConcentration(bolusDoseMg);
-        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3 };
-        let currentCe = bolusState.effectSiteConc;
-        
+        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3, ce: bolusState.effectSiteConc };
+
         const infusionRateMgMin = continuousRate / 60.0;
         const numSteps = Math.floor(targetTime / this.settings.timeStep);
-        
+
         for (let i = 0; i < numSteps; i++) {
-            const plasmaConc = state.a1 / this.pkParams.v1;
-            
-            // Update effect site concentration
-            const dCedt = this.pkParams.ke0 * (plasmaConc - currentCe);
-            currentCe = currentCe + this.settings.timeStep * dCedt;
-            
-            // Update system state
-            state = this.updateSystemStateRK4(state, infusionRateMgMin, this.settings.timeStep);
+            state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, this.settings.timeStep);
         }
-        
-        return currentCe;
+
+        return state.ce;
     }
 
     /**
@@ -276,77 +249,6 @@ class ProtocolEngine {
             plasmaConc: initialPlasmaConc, // μg/mL
             effectSiteConc: 0.0 // Effect site takes time to reach equilibrium
         };
-    }
-
-    /**
-     * 4th order Runge-Kutta integration for 3-compartment PK system
-     * Note: Effect-site concentration is calculated separately in protocol engine
-     */
-    updateSystemStateRK4(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const derivatives = (s) => ({
-            da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
-            da2dt: k12 * s.a1 - k21 * s.a2,
-            da3dt: k13 * s.a1 - k31 * s.a3
-        });
-        
-        // 4th order Runge-Kutta integration
-        const k1 = derivatives(state);
-        const k2 = derivatives({
-            a1: state.a1 + 0.5 * dt * k1.da1dt,
-            a2: state.a2 + 0.5 * dt * k1.da2dt,
-            a3: state.a3 + 0.5 * dt * k1.da3dt
-        });
-        const k3 = derivatives({
-            a1: state.a1 + 0.5 * dt * k2.da1dt,
-            a2: state.a2 + 0.5 * dt * k2.da2dt,
-            a3: state.a3 + 0.5 * dt * k2.da3dt
-        });
-        const k4 = derivatives({
-            a1: state.a1 + dt * k3.da1dt,
-            a2: state.a2 + dt * k3.da2dt,
-            a3: state.a3 + dt * k3.da3dt
-        });
-        
-        return {
-            a1: state.a1 + (dt / 6.0) * (k1.da1dt + 2*k2.da1dt + 2*k3.da1dt + k4.da1dt),
-            a2: state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
-            a3: state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt)
-        };
-    }
-
-    /**
-     * Unified Euler method for fallback
-     */
-    updateSystemStateEuler(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const da1dt = infusionRateMgMin - (k10 + k12 + k13) * state.a1 + k21 * state.a2 + k31 * state.a3;
-        const da2dt = k12 * state.a1 - k21 * state.a2;
-        const da3dt = k13 * state.a1 - k31 * state.a3;
-        
-        return {
-            a1: state.a1 + dt * da1dt,
-            a2: state.a2 + dt * da2dt,
-            a3: state.a3 + dt * da3dt
-        };
-    }
-
-    /**
-     * Calculate effect-site concentration using VHAC when possible
-     * Falls back to simple calculation for individual points
-     */
-    calculateEffectSiteConcentration(plasmaConc, timeMin) {
-        if (timeMin <= 0 || plasmaConc <= 0) return 0;
-        
-        const ke0 = this.patient.pkParams.ke0;
-        // Simple first-order calculation for protocol optimization
-        // For precise simulations, use VHAC in monitoring engine
-        const buildup = 1.0 - Math.exp(-ke0 * timeMin);
-        const effectSite = plasmaConc * buildup;
-        
-        return Math.max(0, effectSite);
     }
 
     /**

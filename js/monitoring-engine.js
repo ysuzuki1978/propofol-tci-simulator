@@ -16,7 +16,7 @@ class MonitoringEngine {
         this.pkParams = null;
         this.doseEvents = [];
         this.lastSimulationResult = null;
-        this.calculationMethod = 'Unified RK4 + Simple Effect-Site';
+        this.calculationMethod = 'Unified RK4';
         this.precision = 0.1; // 0.1-minute time step
     }
 
@@ -106,14 +106,9 @@ class MonitoringEngine {
             times.push(i * timeStep);
         }
 
-        // Calculate plasma concentrations using advanced methods
+        // Plasma and effect-site concentrations from one RK4 integration
         const plasmaResult = this.calculatePlasmaConcentrationsAdvanced(times);
-
-        // Calculate effect-site concentrations using proper differential equation integration
-        const effectSiteConcentrations = this.calculateEffectSiteConcentrationsRK4(
-            plasmaResult.concentrations, 
-            times
-        );
+        const effectSiteConcentrations = plasmaResult.effectSite;
 
         // Calculate BIS values using PD parameters
         const bisValues = effectSiteConcentrations.map(ce => {
@@ -213,13 +208,13 @@ class MonitoringEngine {
         console.log('Using RK4 integration for monitoring simulation');
         console.log('Bolus events to process:', bolusEvents);
         console.log('Infusion events to process:', infusionEvents);
-        return this.calculatePlasmaConcentrationsRK4(times, bolusEvents, infusionEvents);
+        return this.integrateConcentrations(times, bolusEvents, infusionEvents);
     }
 
     /**
-     * RK4-based plasma concentration calculation (fallback)
+     * RK4 integration of plasma and effect-site concentrations over the time grid
      */
-    calculatePlasmaConcentrationsRK4(times, bolusEvents, infusionEvents) {
+    integrateConcentrations(times, bolusEvents, infusionEvents) {
         const timeStep = times.length > 1 ? times[1] - times[0] : this.precision;
         
         // Calculate initial bolus dose for t=0
@@ -230,8 +225,9 @@ class MonitoringEngine {
             }
         }
         
-        let state = new SystemState(initialBolus, 0.0, 0.0); // Initialize with bolus dose
+        let state = { a1: initialBolus, a2: 0.0, a3: 0.0, ce: 0.0 }; // Initialize with bolus dose
         const plasmaConcentrations = [];
+        const effectSiteConcentrations = [];
         
         console.log('RK4 starting with timeStep:', timeStep, 'initial bolus:', initialBolus, 'initial state:', state);
         
@@ -262,11 +258,12 @@ class MonitoringEngine {
             // Calculate plasma concentration
             const plasmaConc = Math.max(0.0, state.a1 / this.pkParams.v1);
             plasmaConcentrations.push(plasmaConc);
+            effectSiteConcentrations.push(state.ce);
             
             // Update state for next time step using RK4
             if (index < times.length - 1) {
                 const infusionRateMgMin = currentInfusionRate / 60.0;
-                state = this.updateSystemStateRK4(state, infusionRateMgMin, timeStep);
+                state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, timeStep);
             }
         }
         
@@ -278,111 +275,9 @@ class MonitoringEngine {
         
         return {
             concentrations: plasmaConcentrations,
+            effectSite: effectSiteConcentrations,
             method: 'RK4'
         };
-    }
-
-    /**
-     * Unified RK4 method as per numerical-unification-guide.yml
-     * Note: For monitoring engine, we only calculate plasma concentrations here
-     * Effect-site concentrations are calculated separately for display purposes
-     */
-    updateSystemStateRK4(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const derivatives = (s) => ({
-            da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
-            da2dt: k12 * s.a1 - k21 * s.a2,
-            da3dt: k13 * s.a1 - k31 * s.a3
-        });
-        
-        // 4th order Runge-Kutta integration
-        const k1 = derivatives(state);
-        const k2 = derivatives({
-            a1: state.a1 + 0.5 * dt * k1.da1dt,
-            a2: state.a2 + 0.5 * dt * k1.da2dt,
-            a3: state.a3 + 0.5 * dt * k1.da3dt
-        });
-        const k3 = derivatives({
-            a1: state.a1 + 0.5 * dt * k2.da1dt,
-            a2: state.a2 + 0.5 * dt * k2.da2dt,
-            a3: state.a3 + 0.5 * dt * k2.da3dt
-        });
-        const k4 = derivatives({
-            a1: state.a1 + dt * k3.da1dt,
-            a2: state.a2 + dt * k3.da2dt,
-            a3: state.a3 + dt * k3.da3dt
-        });
-        
-        return new SystemState(
-            state.a1 + (dt / 6.0) * (k1.da1dt + 2*k2.da1dt + 2*k3.da1dt + k4.da1dt),
-            state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
-            state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt)
-        );
-    }
-
-    /**
-     * Unified Euler method for fallback
-     */
-    updateSystemStateEuler(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const da1dt = infusionRateMgMin - (k10 + k12 + k13) * state.a1 + k21 * state.a2 + k31 * state.a3;
-        const da2dt = k12 * state.a1 - k21 * state.a2;
-        const da3dt = k13 * state.a1 - k31 * state.a3;
-        
-        return new SystemState(
-            state.a1 + dt * da1dt,
-            state.a2 + dt * da2dt,
-            state.a3 + dt * da3dt
-        );
-    }
-
-    /**
-     * Calculate effect-site concentrations using RK4 integration
-     * Properly solves dCe/dt = ke0 * (Cp - Ce)
-     */
-    calculateEffectSiteConcentrationsRK4(plasmaConcentrations, times) {
-        if (!plasmaConcentrations || plasmaConcentrations.length === 0) {
-            return [];
-        }
-        
-        const ke0 = this.patient.pkParams.ke0;
-        const effectSiteConcentrations = new Array(plasmaConcentrations.length);
-        effectSiteConcentrations[0] = 0.0; // Initial effect-site concentration is zero
-        
-        for (let i = 1; i < plasmaConcentrations.length; i++) {
-            const dt = times[i] - times[i-1];
-            const cpPrev = plasmaConcentrations[i-1];
-            const cpCurrent = plasmaConcentrations[i];
-            const cePrev = effectSiteConcentrations[i-1];
-            
-            // Use RK4 to solve dCe/dt = ke0 * (Cp - Ce)
-            // We need to interpolate Cp during the time step
-            const k1 = ke0 * (cpPrev - cePrev);
-            const k2 = ke0 * ((cpPrev + cpCurrent) / 2 - (cePrev + 0.5 * dt * k1));
-            const k3 = ke0 * ((cpPrev + cpCurrent) / 2 - (cePrev + 0.5 * dt * k2));
-            const k4 = ke0 * (cpCurrent - (cePrev + dt * k3));
-            
-            effectSiteConcentrations[i] = cePrev + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4);
-            effectSiteConcentrations[i] = Math.max(0, effectSiteConcentrations[i]);
-        }
-        
-        return effectSiteConcentrations;
-    }
-
-    /**
-     * Legacy effect-site concentration calculation (kept for compatibility)
-     */
-    calculateEffectSiteConcentration(plasmaConc, timeMin) {
-        if (timeMin <= 0 || plasmaConc <= 0) return 0;
-        
-        const ke0 = this.patient.pkParams.ke0;
-        // For step input (bolus), Ce approaches Cp * (1 - exp(-ke0 * t))
-        const buildup = 1.0 - Math.exp(-ke0 * timeMin);
-        const effectSite = plasmaConc * buildup;
-        
-        return Math.max(0, effectSite);
     }
 
     getLastResult() {
