@@ -20,9 +20,7 @@ const urlsToCache = [
   './js/chart-interaction.js',
   './js/eleveld-pk-pd.js',
   './js/remimazolam-pk-pd.js',
-  './utils/lsoda.js',
   './utils/masui-ke0-calculator.js',
-  './utils/vhac.js',
   // External CDN resources (cache with network fallback)
   './js/vendor/chart.min.js',
   './js/vendor/chartjs-adapter-date-fns.bundle.min.js'

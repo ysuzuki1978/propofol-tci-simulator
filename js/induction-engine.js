@@ -31,13 +31,6 @@ class InductionEngine {
         this.updateCallbacks.push(callback);
     }
 
-    removeUpdateCallback(callback) {
-        const index = this.updateCallbacks.indexOf(callback);
-        if (index > -1) {
-            this.updateCallbacks.splice(index, 1);
-        }
-    }
-
     notifyCallbacks() {
         this.updateCallbacks.forEach(callback => {
             try {
@@ -200,10 +193,6 @@ class InductionEngine {
 
     getPlasmaConcentration() {
         return this.state.a1 / this.pkParams.v1;
-    }
-
-    getEffectSiteConcentration() {
-        return this.state.ce;
     }
 
     updateBISValue() {

@@ -130,7 +130,7 @@ class ProtocolEngine {
     }
 
     /**
-     * Generate complete protocol schedule with step-down adjustments using LSODA
+     * Generate complete protocol schedule with step-down adjustments
      */
     generateCompleteProtocol(bolusDoseMg, initialContinuousRate) {
         if (!this.patient || !this.pkParams) {
@@ -139,158 +139,6 @@ class ProtocolEngine {
 
         console.log(`=== Complete Protocol Generation ===`);
         
-        // Always use RK4 for now due to LSODA stability issues
-        // TODO: Fix LSODA implementation in future version
-        console.log('Using RK4 integration for protocol generation');
-        return this.generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate);
-        
-        // LSODA implementation commented out temporarily
-        /*
-        if (typeof PKLSODASolver !== 'undefined') {
-            try {
-                return this.generateCompleteProtocolLSODA(bolusDoseMg, initialContinuousRate);
-            } catch (error) {
-                console.warn('LSODA protocol generation failed, falling back to RK4:', error);
-                return this.generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate);
-            }
-        } else {
-            console.warn('LSODA solver not available, using RK4');
-            return this.generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate);
-        }
-        */
-    }
-
-    /**
-     * Generate complete protocol using LSODA solver with step-down adjustments
-     */
-    generateCompleteProtocolLSODA(bolusDoseMg, initialContinuousRate) {
-        const solver = new PKLSODASolver();
-        
-        // Create simulation timeline
-        const timeStep = this.settings.timeStep;
-        const numSteps = Math.round(this.settings.simulationDuration / timeStep);
-        const times = [];
-        for (let i = 0; i <= numSteps; i++) {
-            times.push(i * timeStep);
-        }
-        
-        // Start with bolus and initial continuous rate
-        const events = [];
-        const rateChanges = [{ time: 0, rate: initialContinuousRate }];
-        let currentRate = initialContinuousRate;
-        
-        const bolusEvents = bolusDoseMg > 0 ? [{ time: 0, amount: bolusDoseMg }] : [];
-        
-        let iteration = 0;
-        const maxIterations = 10; // Prevent infinite loops
-        let protocolComplete = false;
-        let lastAdjustmentTime = -5;
-        let adjustmentCount = 0;
-        const dosageAdjustments = [];
-        
-        while (!protocolComplete && iteration < maxIterations) {
-            iteration++;
-            
-            // Create infusion rate array for current protocol
-            const infusionRates = times.map(t => {
-                let rate = 0;
-                for (const change of rateChanges) {
-                    if (t >= change.time) {
-                        rate = change.rate / 60.0; // mg/min
-                    }
-                }
-                return rate;
-            });
-            
-            // Solve using LSODA
-            const solution = solver.solve3Compartment(
-                this.pkParams,
-                times,
-                infusionRates,
-                bolusEvents,
-                [0, 0, 0] // Initial conditions
-            );
-            
-            // Calculate effect site concentrations
-            const plasmaConcentrations = solution.y.map(state => state[0] / this.pkParams.v1);
-            const effectSiteConcentrations = calculateEffectSiteHybrid(
-                plasmaConcentrations,
-                times,
-                this.pkParams.ke0
-            );
-            
-            // Check for threshold violations and add adjustments
-            protocolComplete = true;
-            
-            for (let i = 1; i < times.length; i++) {
-                const currentTime = times[i];
-                const currentCe = effectSiteConcentrations[i];
-                
-                // Check threshold and adjust dosage
-                if (currentCe >= this.settings.upperThreshold && 
-                    currentTime - lastAdjustmentTime >= this.settings.adjustmentInterval && 
-                    currentRate > 0.1) {
-                    
-                    const oldRate = currentRate;
-                    currentRate = Math.max(0.1, currentRate * this.settings.reductionFactor);
-                    
-                    // Add new rate change
-                    rateChanges.push({ time: currentTime, rate: currentRate });
-                    
-                    dosageAdjustments.push({
-                        time: currentTime,
-                        type: 'threshold_reduction',
-                        oldRate: oldRate,
-                        newRate: currentRate,
-                        ceAtEvent: currentCe,
-                        adjustmentNumber: ++adjustmentCount
-                    });
-                    
-                    lastAdjustmentTime = currentTime;
-                    protocolComplete = false;
-                    
-                    console.log(`${currentTime.toFixed(1)}min: Threshold reached Ce=${currentCe.toFixed(3)} → Rate ${oldRate.toFixed(2)} → ${currentRate.toFixed(2)} mg/hr`);
-                    break; // Restart simulation with new protocol
-                }
-            }
-            
-            // If no more adjustments needed, prepare final data
-            if (protocolComplete) {
-                const timeSeriesData = times.map((time, index) => ({
-                    time: parseFloat(time.toFixed(1)),
-                    ce: effectSiteConcentrations[index],
-                    plasma: plasmaConcentrations[index],
-                    infusionRate: infusionRates[index] * 60.0, // Convert back to mg/hr
-                    targetCe: this.settings.targetCe,
-                    upperThreshold: this.settings.upperThreshold,
-                    adjustmentNumber: adjustmentCount,
-                    isBolus: index === 0
-                }));
-                
-                // Evaluate performance
-                const performance = this.evaluateProtocolPerformance(timeSeriesData, dosageAdjustments);
-                
-                console.log("");
-                console.log("=== Performance Evaluation (LSODA) ===");
-                console.log(`Final effect site concentration: ${performance.finalCe.toFixed(3)} μg/mL`);
-                console.log(`Average deviation: ${performance.avgDeviation.toFixed(4)} μg/mL`);
-                console.log(`Target accuracy: ${performance.targetAccuracy.toFixed(1)}%`);
-                console.log(`Total adjustments: ${performance.totalAdjustments}`);
-                console.log(`Maximum concentration: ${performance.maxCe.toFixed(3)} μg/mL`);
-                
-                return {
-                    timeSeriesData: timeSeriesData,
-                    dosageAdjustments: dosageAdjustments,
-                    performance: performance,
-                    bolusDose: bolusDoseMg,
-                    initialContinuousRate: initialContinuousRate,
-                    calculationMethod: 'LSODA + VHAC'
-                };
-            }
-        }
-        
-        // If we reached max iterations, fall back to RK4
-        console.warn('Maximum iterations reached in LSODA protocol generation, falling back to RK4');
         return this.generateCompleteProtocolRK4(bolusDoseMg, initialContinuousRate);
     }
 
@@ -384,73 +232,10 @@ class ProtocolEngine {
     }
 
     /**
-     * Simulate bolus + continuous infusion for specific time using LSODA
+     * Simulate bolus + continuous infusion for specific time
      */
     simulateBolusAndContinuous(bolusDoseMg, continuousRate, targetTime) {
-        // Always use RK4 for now due to LSODA stability issues
-        // TODO: Fix LSODA implementation in future version
-        console.log('Using RK4 integration for protocol optimization');
         return this.simulateBolusAndContinuousRK4(bolusDoseMg, continuousRate, targetTime);
-        
-        // LSODA implementation commented out temporarily
-        /*
-        if (typeof PKLSODASolver !== 'undefined') {
-            try {
-                return this.simulateBolusAndContinuousLSODA(bolusDoseMg, continuousRate, targetTime);
-            } catch (error) {
-                console.warn('LSODA simulation failed, falling back to RK4:', error);
-                return this.simulateBolusAndContinuousRK4(bolusDoseMg, continuousRate, targetTime);
-            }
-        } else {
-            console.warn('LSODA solver not available, using RK4');
-            return this.simulateBolusAndContinuousRK4(bolusDoseMg, continuousRate, targetTime);
-        }
-        */
-    }
-
-    /**
-     * Simulate bolus + continuous infusion using LSODA solver
-     */
-    simulateBolusAndContinuousLSODA(bolusDoseMg, continuousRate, targetTime) {
-        const solver = new PKLSODASolver();
-        
-        // Create time points
-        const timeStep = this.settings.timeStep;
-        const numSteps = Math.round(targetTime / timeStep);
-        const times = [];
-        for (let i = 0; i <= numSteps; i++) {
-            times.push(i * timeStep);
-        }
-        
-        // Create infusion rate array
-        const infusionRateMgMin = continuousRate / 60.0;
-        const infusionRates = times.map(() => infusionRateMgMin);
-        
-        // Create bolus events
-        const bolusEvents = bolusDoseMg > 0 ? [{ time: 0, amount: bolusDoseMg }] : [];
-        
-        // Solve using LSODA
-        const solution = solver.solve3Compartment(
-            this.pkParams,
-            times,
-            infusionRates,
-            bolusEvents,
-            [0, 0, 0] // Initial conditions
-        );
-        
-        // Extract final state
-        const finalState = solution.y[solution.y.length - 1];
-        const finalPlasmaConc = finalState[0] / this.pkParams.v1;
-        
-        // Calculate final effect site concentration using VHAC
-        const plasmaConcentrations = solution.y.map(state => state[0] / this.pkParams.v1);
-        const effectSiteConcentrations = calculateEffectSiteHybrid(
-            plasmaConcentrations,
-            times,
-            this.pkParams.ke0
-        );
-        
-        return effectSiteConcentrations[effectSiteConcentrations.length - 1];
     }
 
     /**
@@ -647,54 +432,6 @@ class ProtocolEngine {
         return schedule;
     }
 
-    /**
-     * Run complete protocol optimization
-     */
-    runCompleteOptimization(targetConcentration, bolusDose, targetTime) {
-        if (!this.patient) {
-            throw new Error('Patient must be set before optimization');
-        }
-
-        this.settings.targetCe = targetConcentration;
-        
-        // Step 1: Optimize continuous infusion rate
-        const optimizationResult = this.optimizeContinuousInfusionRate(
-            bolusDose, 
-            targetConcentration, 
-            targetTime
-        );
-        
-        // Step 2: Generate complete protocol with step-down
-        const protocolResult = this.generateCompleteProtocol(
-            bolusDose, 
-            optimizationResult.optimalRate
-        );
-        
-        this.lastResult = protocolResult;
-        
-        return {
-            optimization: optimizationResult,
-            protocol: protocolResult,
-            schedule: this.generateProtocolSchedule(bolusDose, optimizationResult.optimalRate)
-        };
-    }
-
-    /**
-     * Get chart data for visualization
-     */
-    getChartData() {
-        if (!this.lastResult) return null;
-        
-        const data = this.lastResult.timeSeriesData;
-        
-        return {
-            times: data.map(d => d.time),
-            plasmaConcentrations: data.map(d => d.plasma),
-            effectSiteConcentrations: data.map(d => d.ce),
-            infusionRates: data.map(d => d.infusionRate),
-            adjustmentTimes: this.lastResult.dosageAdjustments.map(a => a.time)
-        };
-    }
 }
 
 // Export for use in other modules

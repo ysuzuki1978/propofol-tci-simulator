@@ -10,46 +10,6 @@
  */
 
 
-/**
- * Alternative effect-site concentration calculation using discrete time steps
- */
-function calculateEffectSiteDiscrete(plasmaConcentrations, timePoints, ke0, dt = 0.1) {
-    if (plasmaConcentrations.length !== timePoints.length) {
-        throw new Error("Plasma concentrations and time points must have the same length");
-    }
-    
-    if (ke0 <= 0) {
-        throw new Error("ke0 must be positive");
-    }
-    
-    const ceValues = new Array(timePoints.length).fill(0);
-    ceValues[0] = 0.0; // Start with zero effect-site concentration
-    
-    for (let i = 1; i < timePoints.length; i++) {
-        const timeDiff = timePoints[i] - timePoints[i-1];
-        const cpStart = plasmaConcentrations[i-1];
-        const cpEnd = plasmaConcentrations[i];
-        const cePrev = ceValues[i-1];
-        
-        const numSubsteps = Math.max(1, Math.ceil(timeDiff / dt));
-        const substepDt = timeDiff / numSubsteps;
-        
-        let ceCurrent = cePrev;
-        
-        for (let step = 1; step <= numSubsteps; step++) {
-            const progress = (step - 0.5) / numSubsteps;
-            const cpSubstep = cpStart + progress * (cpEnd - cpStart);
-            
-            const dce_dt = ke0 * (cpSubstep - ceCurrent);
-            ceCurrent = ceCurrent + substepDt * dce_dt;
-        }
-        
-        ceValues[i] = ceCurrent;
-    }
-    
-    return ceValues;
-}
-
 class MonitoringEngine {
     constructor() {
         this.patient = null;
@@ -132,7 +92,7 @@ class MonitoringEngine {
             throw new Error('At least one dose event is required for simulation');
         }
 
-        console.log('Running monitoring simulation with VHAC + RK4 engine');
+        console.log('Running monitoring simulation with RK4 engine');
 
         // Determine simulation duration
         const maxEventTime = Math.max(...this.doseEvents.map(event => event.timeInMinutes));
@@ -250,89 +210,10 @@ class MonitoringEngine {
             infusionEvents.unshift({ time: 0.0, rate: 0.0 });
         }
         
-        // Initialize state with t=0 bolus as initial condition
-        let state = new SystemState(initialBolus, 0, 0);
-        const plasmaConcentrations = [];
-        
-        let bolusIndex = 0;
-        let infusionIndex = 0;
-        let currentInfusionRate = 0.0;
-        
-        // Use RK4 for now due to LSODA stability issues
-        // TODO: Fix LSODA implementation in future version
         console.log('Using RK4 integration for monitoring simulation');
         console.log('Bolus events to process:', bolusEvents);
         console.log('Infusion events to process:', infusionEvents);
         return this.calculatePlasmaConcentrationsRK4(times, bolusEvents, infusionEvents);
-        
-        // LSODA implementation commented out temporarily
-        /*
-        if (typeof LSODA !== 'undefined') {
-            return this.calculatePlasmaConcentrationsLSODA(times, bolusEvents, infusionEvents);
-        } else {
-            return this.calculatePlasmaConcentrationsRK4(times, bolusEvents, infusionEvents);
-        }
-        */
-    }
-
-    /**
-     * LSODA-based plasma concentration calculation
-     */
-    calculatePlasmaConcentrationsLSODA(times, bolusEvents, infusionEvents) {
-        const solver = new PKLSODASolver();
-        const pkParams = {
-            k10: this.pkParams.k10,
-            k12: this.pkParams.k12,
-            k21: this.pkParams.k21,
-            k13: this.pkParams.k13,
-            k31: this.pkParams.k31
-        };
-
-        // Prepare infusion rates array
-        const infusionRates = times.map(t => {
-            const currentEvent = infusionEvents.slice().reverse().find(event => t >= event.time);
-            const rate = currentEvent ? currentEvent.rate : 0.0;
-            return rate / 60.0; // Convert from mg/hr to mg/min
-        });
-
-        try {
-            // Convert bolus events to proper format for LSODA
-            const bolusDoses = bolusEvents.map(event => ({
-                time: event.time,
-                amount: event.dose
-            }));
-            
-            console.log('Debug LSODA inputs:');
-            console.log('Times length:', times.length, 'First/Last:', times[0], times[times.length-1]);
-            console.log('Infusion rates length:', infusionRates.length, 'First few:', infusionRates.slice(0, 3));
-            console.log('Bolus doses:', bolusDoses);
-            console.log('PK params:', pkParams);
-            
-            const result = solver.solve3Compartment(
-                pkParams,
-                times,
-                infusionRates,
-                bolusDoses,
-                [0, 0, 0]
-            );
-
-            const concentrations = result.y.map(state => 
-                Math.max(0.0, state[0] / this.pkParams.v1)
-            );
-
-            console.log('LSODA simulation completed successfully');
-            console.log('LSODA result length:', result.y.length);
-            console.log('First few states:', result.y.slice(0, 3));
-            console.log('First few concentrations:', concentrations.slice(0, 3));
-            console.log('Max concentration:', Math.max(...concentrations));
-            return {
-                concentrations: concentrations,
-                method: 'LSODA'
-            };
-        } catch (error) {
-            console.warn('LSODA failed, falling back to RK4:', error);
-            return this.calculatePlasmaConcentrationsRK4(times, bolusEvents, infusionEvents);
-        }
     }
 
     /**
@@ -545,12 +426,8 @@ class MonitoringEngine {
 // Export for use in other modules
 if (typeof window !== 'undefined') {
     window.MonitoringEngine = MonitoringEngine;
-    window.calculateEffectSiteDiscrete = calculateEffectSiteDiscrete;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { 
-        MonitoringEngine, 
-        calculateEffectSiteDiscrete 
-    };
+    module.exports = { MonitoringEngine };
 }
