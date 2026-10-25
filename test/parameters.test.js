@@ -43,3 +43,14 @@ test('engines keep parameters on the engine and leave the Patient untouched', ()
     }
     assert.strictEqual(Object.keys(patient).join(), before);
 });
+
+test('fat-free mass matches the Al-Sallami product form (values from the Triad simulator core/body-composition.js)', () => {
+    const rows = [[1.5, 10, 80, true, 8.112978617604107], [5, 18, 110, false, 14.326283222179626],
+        [35, 70, 170, true, 54.47520596013766], [45, 120, 165, false, 57.67085048565597],
+        [30, 150, 170, true, 77.7199914287238], [80, 50, 150, false, 32.869527497097664]];
+    for (const [age, weight, height, male, expected] of rows) {
+        const patient = app.run(`new Patient('f', ${age}, ${weight}, ${height}, SexType.${male ? 'MALE' : 'FEMALE'}, AsapsType.CLASS_1_2, OpioidType.NO)`);
+        assert.ok(Math.abs(patient.ffm - expected) < 1e-9, `age ${age}: ${patient.ffm} vs ${expected}`);
+        assert.ok(app.get('EleveldPKPDCalculator').calculateFFM(patient) === patient.ffm);
+    }
+});

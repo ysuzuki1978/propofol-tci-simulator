@@ -22,6 +22,7 @@ Cleanup release: dead code removed, one integrator, tests. The Ce shown by the p
 - `npm test` runs `test/` (Node, no dependencies)
 
 ### Fixed
+- Fat-free mass now uses the Al-Sallami product form (maturation factor x Janmahasatian), as in the Triad simulator and the Eleveld 2018 PK table. The earlier code used an additive form with an extra term and a shortcut of 0.82 x weight below 2 years; the two copies in `models.js` and `eleveld-pk-pd.js` are now one. The reference individual (35 y, 70 kg, 170 cm) is unchanged. Effect on V3 / Q3 in the cases checked: 1.5 y 10 kg -0.7 / -0.5 %, 5 y 18 kg +0.9 / +0.7 %, 45 y 120 kg -0.8 / -0.6 %, 30 y 150 kg +2.0 / +1.5 %, 80 y 50 kg +1.7 / +1.3 %. V1, V2 and CL are unchanged. A test compares FFM with the Triad values
 - Effect-site concentration in the protocol paths was integrated with forward Euler (dt = 0.1 min) and lagged the true value. Against the exact (matrix exponential) solution for 100 mg bolus + 300 mg/h, 40 y 70 kg male, Eleveld:
   - `simulateBolusAndContinuous`, Ce at 1 min: 1.62989 -> 1.56677 ug/mL (exact 1.56677); error +4.03 % -> 0.00 %. At 5 min +2.90 % -> 0.00 %, at 20 min +0.36 % -> 0.00 %
   - `generateCompleteProtocol`, Ce at 1 min: 1.52614 -> 1.56611 (+2.6 %, with the next fix 1.56533)
