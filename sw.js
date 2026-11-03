@@ -1,8 +1,8 @@
-// Service Worker for Propofol TCI TIVA V2.6.0
+// Service Worker for Propofol TCI TIVA V2.6.1
 // PWA offline functionality and caching
 
-const CACHE_NAME = 'propofol-tci-v2.6.0';
-const VERSION = '2.6.0';
+const CACHE_NAME = 'propofol-tci-v2.6.1';
+const VERSION = '2.6.1';
 
 // Files to cache for offline use
 const urlsToCache = [
@@ -12,6 +12,8 @@ const urlsToCache = [
   './css/main.css',
   './js/main.js',
   './js/models.js',
+  './js/integrator.js',
+  './js/pk-engine-base.js',
   './js/induction-engine.js',
   './js/protocol-engine.js',
   './js/advanced-protocol-engine.js',
@@ -20,9 +22,7 @@ const urlsToCache = [
   './js/chart-interaction.js',
   './js/eleveld-pk-pd.js',
   './js/remimazolam-pk-pd.js',
-  './utils/lsoda.js',
   './utils/masui-ke0-calculator.js',
-  './utils/vhac.js',
   // External CDN resources (cache with network fallback)
   './js/vendor/chart.min.js',
   './js/vendor/chartjs-adapter-date-fns.bundle.min.js'

@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>Propofol TCI TIVA V2.6.0</title>
+    <title>Propofol TCI TIVA V2.6.1</title>
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#010409">
@@ -67,7 +67,7 @@
         <!-- Compact Header -->
         <header class="app-header">
             <div class="header-left">
-                <h1>Propofol TCI <span class="version">V2.6</span></h1>
+                <h1>Propofol TCI <span class="version">V2.6.1</span></h1>
             </div>
             <div class="header-right">
                 <button id="editPatientBtn" class="btn-icon" aria-label="Patient Settings">
@@ -526,11 +526,12 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="utils/lsoda.js"></script>
     <script src="utils/masui-ke0-calculator.js"></script>
     <script src="js/models.js"></script>
     <script src="js/eleveld-pk-pd.js"></script>
     <script src="js/remimazolam-pk-pd.js"></script>
+    <script src="js/integrator.js"></script>
+    <script src="js/pk-engine-base.js"></script>
     <script src="js/induction-engine.js"></script>
     <script src="js/protocol-engine.js"></script>
     <script src="js/advanced-protocol-engine.js"></script>

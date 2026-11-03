@@ -76,8 +76,6 @@ const EleveldModelConstants = {
         num2: 9270,
         den1: 6680,
         den2: 216,
-        num3: 1.11,
-        num4: 128,
         exp1: 13.4,
         exp2: 12.7
     },
@@ -86,8 +84,6 @@ const EleveldModelConstants = {
         num2: 9270,
         den1: 8780,
         den2: 244,
-        num3: 1.07,
-        num4: 148,
         exp1: 7.1,
         exp2: 1.1
     }
@@ -148,38 +144,32 @@ class Patient {
     }
     
     get ffm() {
-        // Fat-Free Mass using Al-Sallami equation
-        const bmi = this.bmi;
-        const wgt = this.weight;
-        const hgt_m = this.height / 100;
-        const age = this.age;
-        const sex = this.sex;
-        
-        if (sex === SexType.MALE) {
-            const c = EleveldModelConstants.ffm_male;
-            const term1 = (c.num1 * c.num2 * wgt) / (c.den1 + c.den2 * bmi);
-            const term2 = (1 - c.num1) / (1 + Math.pow(age / c.exp1, -c.exp2));
-            const term3 = c.num3 * wgt - c.num4 * Math.pow(wgt / this.height, 2);
-            return term1 + term2 * term3;
-        } else {
-            const c = EleveldModelConstants.ffm_female;
-            const term1 = (c.num1 * c.num2 * wgt) / (c.den1 + c.den2 * bmi);
-            const term2 = (1 - c.num1) / (1 + Math.pow(age / c.exp1, -c.exp2));
-            const term3 = c.num3 * wgt - c.num4 * Math.pow(wgt / this.height, 2);
-            return term1 + term2 * term3;
-        }
+        return Patient.fatFreeMass(this.weight, this.height, this.age, this.sex === SexType.MALE);
     }
-    
+
+    /**
+     * Fat-free mass, Al-Sallami (kg), in the product form Eleveld 2018 uses:
+     * a maturation factor times the Janmahasatian adult value. The same form as
+     * fatFreeMassAlSallami in the Triad simulator's core/body-composition.js.
+     * @param {number} weight kg
+     * @param {number} height cm
+     * @param {number} age years
+     * @param {boolean} male
+     */
+    static fatFreeMass(weight, height, age, male) {
+        const bmi = weight / Math.pow(height / 100, 2);
+        const c = male ? EleveldModelConstants.ffm_male : EleveldModelConstants.ffm_female;
+        const base = (c.num2 * weight) / (c.den1 + c.den2 * bmi);
+        // Male: 0.88 -> 1 with age; female: 1.11 -> 1. The same expression covers both.
+        const bracket = c.num1 + (1 - c.num1) / (1 + Math.pow(age / c.exp1, -c.exp2));
+        return bracket * base;
+    }
+
     get ffm_ref() {
         // FFM for reference individual (35 years, 70 kg, 170 cm, male)
-        const bmi_ref = 70 / Math.pow(1.7, 2);
-        const c = EleveldModelConstants.ffm_male;
-        const term1 = (c.num1 * c.num2 * 70) / (c.den1 + c.den2 * bmi_ref);
-        const term2 = (1 - c.num1) / (1 + Math.pow(35 / c.exp1, -c.exp2));
-        const term3 = c.num3 * 70 - c.num4 * Math.pow(70 / 170, 2);
-        return term1 + term2 * term3;
+        return Patient.fatFreeMass(70, 170, 35, true);
     }
-    
+
     minutesToClockTime(minutesFromStart) {
         return new Date(this.anesthesiaStartTime.getTime() + minutesFromStart * 60000);
     }

@@ -10,10 +10,9 @@
  * - Real-time adjustment recommendations
  */
 
-class AdvancedProtocolEngine {
+class AdvancedProtocolEngine extends PKEngineBase {
     constructor() {
-        this.patient = null;
-        this.pkParams = null;
+        super();
         this.settings = {
             targetCe: 3.0,                 // Appropriate for propofol
             upperThresholdRatio: 1.2,      // 120% of target
@@ -35,53 +34,9 @@ class AdvancedProtocolEngine {
         this.optimizationHistory = [];
     }
 
-    setPatient(patient) {
-        this.patient = patient;
-        this.pkParams = this.calculatePKParameters(patient);
-        // Set pkParams on patient object for unified access
-        this.patient.pkParams = this.pkParams;
-        this.patient.pdParams = this.pdParams;
-        console.log('Advanced Protocol Engine: Patient set', patient.id);
-    }
-
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
         console.log('Protocol settings updated:', this.settings);
-    }
-
-    calculatePKParameters(patient) {
-        console.log('Calculating PK parameters for advanced protocol with Eleveld model');
-        
-        // Use the Eleveld PK-PD calculator
-        const modelParams = EleveldPKPDCalculator.getModelParameters(patient);
-        
-        // Validate parameters
-        const validation = EleveldPKPDCalculator.validateParameters(modelParams);
-        if (!validation.isValid) {
-            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
-        }
-        
-        // Store PD parameters for BIS calculation
-        this.pdParams = modelParams.pd;
-        
-        console.log('Eleveld PK/PD parameters calculated successfully for advanced protocol');
-        
-        const pkParams = modelParams.pk;
-        
-        return {
-            v1: pkParams.v1,
-            v2: pkParams.v2,
-            v3: pkParams.v3,
-            cl: pkParams.cl,
-            q2: pkParams.q2,
-            q3: pkParams.q3,
-            ke0: pkParams.ke0,
-            k10: pkParams.k10,
-            k12: pkParams.k12,
-            k21: pkParams.k21,
-            k13: pkParams.k13,
-            k31: pkParams.k31
-        };
     }
 
     /**
@@ -219,70 +174,6 @@ class AdvancedProtocolEngine {
     }
 
     /**
-     * Grid search optimization with configurable precision (original method)
-     */
-    gridSearchOptimization(bolusDoseMg, targetCe, targetTime, step, minRate, maxRate) {
-        let bestRate = 1.0;
-        let bestError = Infinity;
-        const results = [];
-
-        for (let rate = minRate; rate <= maxRate; rate += step) {
-            const ceAtTarget = this.simulateBolusAndContinuous(bolusDoseMg, rate, targetTime);
-            const error = Math.abs(ceAtTarget - targetCe);
-
-            results.push({
-                rate: rate,
-                ceAtTarget: ceAtTarget,
-                error: error,
-                relativeError: (error / targetCe) * 100
-            });
-
-            if (error < bestError) {
-                bestError = error;
-                bestRate = rate;
-            }
-        }
-
-        return {
-            bestRate: bestRate,
-            bestError: bestError,
-            results: results
-        };
-    }
-
-    /**
-     * Grid search optimization for full protocol final concentration
-     */
-    gridSearchOptimizationFullProtocol(bolusDoseMg, targetCe, step, minRate, maxRate) {
-        let bestRate = 1.0;
-        let bestError = Infinity;
-        const results = [];
-
-        for (let rate = minRate; rate <= maxRate; rate += step) {
-            const finalCe = this.simulateFullProtocolFinalCe(bolusDoseMg, rate, targetCe);
-            const error = Math.abs(finalCe - targetCe);
-
-            results.push({
-                rate: rate,
-                finalCe: finalCe,
-                error: error,
-                relativeError: (error / targetCe) * 100
-            });
-
-            if (error < bestError) {
-                bestError = error;
-                bestRate = rate;
-            }
-        }
-
-        return {
-            bestRate: bestRate,
-            bestError: bestError,
-            results: results
-        };
-    }
-
-    /**
      * Grid search optimization for multi-point target maintenance
      */
     gridSearchOptimizationMultiPoint(bolusDoseMg, targetCe, step, minRate, maxRate) {
@@ -382,8 +273,7 @@ class AdvancedProtocolEngine {
         const upperThreshold = targetCe * this.settings.upperThresholdRatio;
         
         const bolusState = this.calculateBolusInitialConcentration(bolusDoseMg);
-        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3 };
-        let currentCe = bolusState.effectSiteConc;
+        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3, ce: bolusState.effectSiteConc };
         let currentRate = initialContinuousRate;
         
         const timeSeriesData = [];
@@ -396,7 +286,6 @@ class AdvancedProtocolEngine {
         
         for (let i = 0; i < numSteps; i++) {
             const currentTime = i * this.settings.timeStep;
-            const infusionRateMgMin = (currentRate) / 60.0;
             
             // Track adjustments per hour
             const hour = Math.floor(currentTime / 60);
@@ -408,11 +297,7 @@ class AdvancedProtocolEngine {
             // Calculate plasma concentration
             const plasmaConc = state.a1 / this.pkParams.v1;
             
-            // Update effect site concentration
-            if (i > 0) {
-                const dCedt = this.pkParams.ke0 * (plasmaConc - currentCe);
-                currentCe = currentCe + this.settings.timeStep * dCedt;
-            }
+            const currentCe = state.ce;
             
             // Enhanced step-down logic with hourly limits
             if (currentCe >= upperThreshold && 
@@ -442,57 +327,13 @@ class AdvancedProtocolEngine {
             
             // Update system state using RK4
             if (i < numSteps - 1) {
-                state = this.updateSystemStateRK4(state, infusionRateMgMin, this.settings.timeStep);
+                // The rate recorded for this time point (after any step-down above) applies to the step that follows
+                const infusionRateMgMin = currentRate / 60.0;
+                state = PKIntegrator.rk4Step(state, this.pkParams, infusionRateMgMin, this.settings.timeStep);
             }
         }
         
         return timeSeriesData;
-    }
-
-    /**
-     * Simulate full step-down protocol and return final concentration (legacy method)
-     */
-    simulateFullProtocolFinalCe(bolusDoseMg, initialContinuousRate, targetCe) {
-        const upperThreshold = targetCe * this.settings.upperThresholdRatio;
-        
-        const bolusState = this.calculateBolusInitialConcentration(bolusDoseMg);
-        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3 };
-        let currentCe = bolusState.effectSiteConc;
-        let currentRate = initialContinuousRate;
-        
-        let lastAdjustmentTime = -this.settings.adjustmentInterval;
-        
-        const numSteps = Math.floor(this.settings.simulationDuration / this.settings.timeStep) + 1;
-        
-        for (let i = 0; i < numSteps; i++) {
-            const currentTime = i * this.settings.timeStep;
-            const infusionRateMgMin = (currentRate) / 60.0;
-            
-            // Calculate plasma concentration
-            const plasmaConc = state.a1 / this.pkParams.v1;
-            
-            // Update effect site concentration
-            if (i > 0) {
-                const dCedt = this.pkParams.ke0 * (plasmaConc - currentCe);
-                currentCe = currentCe + this.settings.timeStep * dCedt;
-            }
-            
-            // Step-down logic
-            if (currentCe >= upperThreshold && 
-                currentTime - lastAdjustmentTime >= this.settings.adjustmentInterval &&
-                currentRate > this.settings.minimumRate) {
-                
-                currentRate = Math.max(this.settings.minimumRate, currentRate * this.settings.reductionFactor);
-                lastAdjustmentTime = currentTime;
-            }
-            
-            // Update system state using RK4
-            if (i < numSteps - 1) {
-                state = this.updateSystemStateRK4(state, infusionRateMgMin, this.settings.timeStep);
-            }
-        }
-        
-        return currentCe;
     }
 
     /**
@@ -700,33 +541,6 @@ class AdvancedProtocolEngine {
     }
 
     /**
-     * Simulate bolus + continuous infusion for specific time
-     */
-    simulateBolusAndContinuous(bolusDoseMg, continuousRate, targetTime) {
-        const bolusState = this.calculateBolusInitialConcentration(bolusDoseMg);
-        let state = { a1: bolusState.a1, a2: bolusState.a2, a3: bolusState.a3 };
-        let currentCe = bolusState.effectSiteConc;
-        
-        const infusionRateMgMin = (continuousRate ) / 60.0;
-        const numSteps = Math.floor(targetTime / this.settings.timeStep);
-        
-        
-        for (let i = 0; i < numSteps; i++) {
-            const plasmaConc = state.a1 / this.pkParams.v1;
-            
-            // Update effect site concentration
-            const dCedt = this.pkParams.ke0 * (plasmaConc - currentCe);
-            currentCe = currentCe + this.settings.timeStep * dCedt;
-            
-            // Update system state
-            state = this.updateSystemStateRK4(state, infusionRateMgMin, this.settings.timeStep);
-        }
-        
-        
-        return currentCe;
-    }
-
-    /**
      * Calculate initial state after bolus administration
      */
     calculateBolusInitialConcentration(bolusDoseMg) {
@@ -738,74 +552,6 @@ class AdvancedProtocolEngine {
             plasmaConc: initialPlasmaConc,
             effectSiteConc: 0.0
         };
-    }
-
-    /**
-     * 4th order Runge-Kutta integration (Context7 Math.NET style)
-     */
-    updateSystemStateRK4(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const derivatives = (s) => ({
-            da1dt: infusionRateMgMin - (k10 + k12 + k13) * s.a1 + k21 * s.a2 + k31 * s.a3,
-            da2dt: k12 * s.a1 - k21 * s.a2,
-            da3dt: k13 * s.a1 - k31 * s.a3
-        });
-        
-        const k1 = derivatives(state);
-        const k2 = derivatives({
-            a1: state.a1 + 0.5 * dt * k1.da1dt,
-            a2: state.a2 + 0.5 * dt * k1.da2dt,
-            a3: state.a3 + 0.5 * dt * k1.da3dt
-        });
-        const k3 = derivatives({
-            a1: state.a1 + 0.5 * dt * k2.da1dt,
-            a2: state.a2 + 0.5 * dt * k2.da2dt,
-            a3: state.a3 + 0.5 * dt * k2.da3dt
-        });
-        const k4 = derivatives({
-            a1: state.a1 + dt * k3.da1dt,
-            a2: state.a2 + dt * k3.da2dt,
-            a3: state.a3 + dt * k3.da3dt
-        });
-        
-        return {
-            a1: state.a1 + (dt / 6.0) * (k1.da1dt + 2*k2.da1dt + 2*k3.da1dt + k4.da1dt),
-            a2: state.a2 + (dt / 6.0) * (k1.da2dt + 2*k2.da2dt + 2*k3.da2dt + k4.da2dt),
-            a3: state.a3 + (dt / 6.0) * (k1.da3dt + 2*k2.da3dt + 2*k3.da3dt + k4.da3dt)
-        };
-    }
-
-    /**
-     * Unified Euler method for fallback
-     */
-    updateSystemStateEuler(state, infusionRateMgMin, dt) {
-        const { k10, k12, k21, k13, k31 } = this.patient.pkParams;
-        
-        const da1dt = infusionRateMgMin - (k10 + k12 + k13) * state.a1 + k21 * state.a2 + k31 * state.a3;
-        const da2dt = k12 * state.a1 - k21 * state.a2;
-        const da3dt = k13 * state.a1 - k31 * state.a3;
-        
-        return {
-            a1: state.a1 + dt * da1dt,
-            a2: state.a2 + dt * da2dt,
-            a3: state.a3 + dt * da3dt
-        };
-    }
-
-    /**
-     * Unified effect-site concentration calculation as per numerical-unification-guide.yml
-     * Corrected formula: dCe/dt = ke0 * (Cp - Ce)
-     */
-    calculateEffectSiteConcentration(plasmaConc, timeMin) {
-        if (timeMin <= 0 || plasmaConc <= 0) return 0;
-        
-        const ke0 = this.patient.pkParams.ke0;
-        // For step input (bolus), Ce approaches Cp * (1 - exp(-ke0 * t))
-        const buildup = 1.0 - Math.exp(-ke0 * timeMin);
-        const effectSite = plasmaConc * buildup;
-        
-        return Math.max(0, effectSite);
     }
 
     /**
@@ -893,123 +639,6 @@ class AdvancedProtocolEngine {
     }
 
     /**
-     * Generate multi-point maintenance schedule (new method)
-     */
-    generateMultiPointSchedule(bolusDoseMg, continuousRate, adjustments) {
-        const schedule = [];
-        
-        // Bolus dose
-        schedule.push({
-            time: 0,
-            action: 'Bolus Administration',
-            dose: `${bolusDoseMg.toFixed(1)} mg`,
-            rate: '-',
-            comment: 'Initial bolus administration',
-            type: 'bolus'
-        });
-        
-        // Initial continuous infusion
-        schedule.push({
-            time: 0,
-            action: 'Start Continuous Infusion',
-            dose: '-',
-            rate: `${continuousRate.toFixed(2)} mg/hr`,
-            comment: 'Initial continuous infusion rate',
-            type: 'start_continuous'
-        });
-        
-        // Step-down adjustments with corrected Ce values
-        adjustments.forEach((adj, index) => {
-            schedule.push({
-                time: Math.round(adj.time),
-                action: `Step-down #${adj.adjustmentNumber}`,
-                dose: '-',
-                rate: `${adj.newRate.toFixed(2)} mg/hr`,
-                comment: `Threshold reached, dose reduced (Ce: ${adj.ceAtEvent.toFixed(2)} μg/mL, -${adj.reductionPercent.toFixed(1)}%)`,
-                type: 'step_down',
-                ceAtEvent: adj.ceAtEvent,
-                reductionPercent: adj.reductionPercent
-            });
-        });
-        
-        // Add maintenance point summaries
-        const maintenancePoints = this.settings.maintenancePoints;
-        if (this.lastResult && this.lastResult.protocol && this.lastResult.protocol.timeSeriesData) {
-            const timeSeriesData = this.lastResult.protocol.timeSeriesData;
-            
-            schedule.push({
-                time: '',
-                action: '=== Maintenance Point Evaluation ===',
-                dose: '',
-                rate: '',
-                comment: '',
-                type: 'separator'
-            });
-            
-            maintenancePoints.forEach(timePoint => {
-                const pointData = timeSeriesData.find(point => Math.abs(point.time - timePoint) < 0.5);
-                if (pointData) {
-                    const error = Math.abs(pointData.ce - this.settings.targetCe);
-                    const errorPercent = (error / this.settings.targetCe) * 100;
-                    schedule.push({
-                        time: timePoint,
-                        action: `Maintenance Point`,
-                        dose: '-',
-                        rate: '-',
-                        comment: `Ce: ${pointData.ce.toFixed(3)} μg/mL (Error: ${errorPercent.toFixed(1)}%)`,
-                        type: 'maintenance_point'
-                    });
-                }
-            });
-        }
-        
-        return schedule;
-    }
-
-    /**
-     * Generate detailed clinical schedule (legacy method)
-     */
-    generateDetailedSchedule(bolusDoseMg, continuousRate, adjustments) {
-        const schedule = [];
-        
-        // Bolus dose
-        schedule.push({
-            time: 0,
-            action: 'Bolus Administration',
-            dose: `${bolusDoseMg.toFixed(1)} mg`,
-            rate: '-',
-            comment: 'Initial bolus administration',
-            type: 'bolus'
-        });
-        
-        // Initial continuous infusion
-        schedule.push({
-            time: 0,
-            action: 'Start Continuous Infusion',
-            dose: '-',
-            rate: `${continuousRate.toFixed(2)} mg/hr`,
-            comment: 'Initial continuous infusion rate',
-            type: 'start_continuous'
-        });
-        
-        // Step-down adjustments
-        adjustments.forEach((adj, index) => {
-            schedule.push({
-                time: Math.round(adj.time),
-                action: `Step-down #${adj.adjustmentNumber}`,
-                dose: '-',
-                rate: `${adj.newRate.toFixed(2)} mg/hr`,
-                comment: `Threshold reached, dose reduced (Ce: ${adj.ceAtEvent.toFixed(2)} μg/mL, -${adj.reductionPercent.toFixed(1)}%)`,
-                type: 'step_down',
-                ceAtEvent: adj.ceAtEvent,
-                reductionPercent: adj.reductionPercent
-            });
-        });
-        
-        return schedule;
-    }
-
-    /**
      * Get chart data for visualization
      */
     getChartData() {
@@ -1032,10 +661,6 @@ class AdvancedProtocolEngine {
 
     getLastResult() {
         return this.lastResult;
-    }
-
-    getOptimizationHistory() {
-        return this.optimizationHistory;
     }
 
     reset() {

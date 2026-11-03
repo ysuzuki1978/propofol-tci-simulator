@@ -4,36 +4,13 @@
 class EleveldPKPDCalculator {
     
     /**
-     * Calculate Fat-Free Mass using Al-Sallami equation
-     * Note: For very young children (<2 years), FFM approaches total body weight
+     * Fat-free mass (kg), Al-Sallami: see Patient.fatFreeMass. There is no
+     * special case for infants; the maturation factor in the equation covers them.
      */
     static calculateFFM(patient) {
-        const bmi = patient.bmi;
-        const wgt = patient.weight;
-        const age = patient.age;
-        const sex = patient.sex;
-        
-        // For very young children (1-2 years), use simplified calculation
-        if (age < 2) {
-            // In very young children, FFM is approximately 80-85% of total body weight
-            return wgt * 0.82;
-        }
-        
-        if (sex === SexType.MALE) {
-            // Male FFM calculation
-            const term1 = (0.88 * 9270 * wgt) / (6680 + 216 * bmi);
-            const term2 = (1 - 0.88) / (1 + Math.pow(age / 13.4, -12.7));
-            const term3 = 1.11 * wgt - 128 * Math.pow(wgt / patient.height, 2);
-            return term1 + term2 * term3;
-        } else {
-            // Female FFM calculation
-            const term1 = (1.11 * 9270 * wgt) / (8780 + 244 * bmi);
-            const term2 = (1 - 1.11) / (1 + Math.pow(age / 7.1, -1.1));
-            const term3 = 1.07 * wgt - 148 * Math.pow(wgt / patient.height, 2);
-            return term1 + term2 * term3;
-        }
+        return patient.ffm;
     }
-    
+
     /**
      * Helper function: Sigmoid function for maturation
      */
@@ -171,6 +148,22 @@ class EleveldPKPDCalculator {
         };
     }
     
+    /**
+     * Model parameters for a patient, validated. Throws if the model returns
+     * values outside the checked ranges. Returns { pk, pd, ffm }.
+     */
+    static resolveParameters(patient) {
+        const modelParams = this.getModelParameters(patient);
+        const validation = this.validateParameters(modelParams);
+        if (!validation.isValid) {
+            throw new Error('Invalid Eleveld model parameters: ' + validation.errors.join(', '));
+        }
+        if (typeof window !== 'undefined' && window.DEBUG) {
+            this.printParameters(patient, modelParams);
+        }
+        return modelParams;
+    }
+
     /**
      * Validate calculated parameters
      */

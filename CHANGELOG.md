@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.1] - 2026-10-25
+
+Cleanup release: dead code removed, one integrator, tests. The Ce shown by the protocol and monitoring steps changes (see Fixed); the induction step is unchanged.
+
+### Removed
+- `utils/lsoda.js` and `utils/vhac.js`, the commented-out LSODA branches, and every function that only they called. `vhac.js` was never loaded by `index.html`, so reviving the LSODA branch would have thrown `ReferenceError`
+- Functions with no callers: `runCompleteOptimization`, `ProtocolEngine.getChartData`, `gridSearchOptimization`, `gridSearchOptimizationFullProtocol`, `simulateFullProtocolFinalCe`, `AdvancedProtocolEngine.simulateBolusAndContinuous`, `generateMultiPointSchedule`, `generateDetailedSchedule`, `getOptimizationHistory`, `removeUpdateCallback`, `calculateEffectSiteDiscrete`, and the three unused `calculateEffectSiteConcentration`
+- The Euler paths (`updateSystemStateEuler` x4, the Euler fallback in the induction engine) and `MonitoringEngine.calculateEffectSiteConcentrationsRK4`
+- About 1,850 lines in total (1,852 deleted, 153 added in `js/`, `utils/`, `index.html`, `sw.js`)
+
+### Changed
+- `js/integrator.js`: one RK4 step of the 3-compartment system with the effect site in the state, used by all four engines (it replaces four copies of `updateSystemStateRK4`)
+- `js/pk-engine-base.js` and `EleveldPKPDCalculator.resolveParameters`: one place that derives and validates the PK/PD parameters. The four `calculatePKParameters` and three `setPatient` copies are gone. Engines no longer write `pkParams` / `pdParams` onto the `Patient`
+- `ProtocolEngine.simulateBolusAndContinuousRK4` and `generateCompleteProtocolRK4` (RK4 in the name, Euler in the body) are `simulateBolusAndContinuous` and `generateCompleteProtocol`, and now use RK4
+- `npm test` runs `test/` (Node, no dependencies)
+
+### Fixed
+- Fat-free mass now uses the Al-Sallami product form (maturation factor x Janmahasatian), as in the Triad simulator and the Eleveld 2018 PK table. The earlier code used an additive form with an extra term and a shortcut of 0.82 x weight below 2 years; the two copies in `models.js` and `eleveld-pk-pd.js` are now one. The reference individual (35 y, 70 kg, 170 cm) is unchanged. Effect on V3 / Q3 in the cases checked: 1.5 y 10 kg -0.7 / -0.5 %, 5 y 18 kg +0.9 / +0.7 %, 45 y 120 kg -0.8 / -0.6 %, 30 y 150 kg +2.0 / +1.5 %, 80 y 50 kg +1.7 / +1.3 %. V1, V2 and CL are unchanged. A test compares FFM with the Triad values
+- Effect-site concentration in the protocol paths was integrated with forward Euler (dt = 0.1 min) and lagged the true value. Against the exact (matrix exponential) solution for 100 mg bolus + 300 mg/h, 40 y 70 kg male, Eleveld:
+  - `simulateBolusAndContinuous`, Ce at 1 min: 1.62989 -> 1.56677 ug/mL (exact 1.56677); error +4.03 % -> 0.00 %. At 5 min +2.90 % -> 0.00 %, at 20 min +0.36 % -> 0.00 %
+  - `generateCompleteProtocol`, Ce at 1 min: 1.52614 -> 1.56611 (+2.6 %, with the next fix 1.56533)
+  - Advanced step-down, Ce at 1 min: 1.52648 -> 1.56677 (+2.6 %); maximum relative error over the 360 min run 2.66 % -> 0.00 %
+  - Monitoring: maximum relative error 1.30 % -> 0.00 % (Ce is now integrated together with Cp instead of from interpolated Cp)
+  - Induction: unchanged (it already integrated Ce with RK4)
+  - Advanced-protocol optimal rate: 490 mg/h unchanged for the 40 y 70 kg male; 783.6 -> 784.6 mg/h for a 70 y 55 kg 155 cm female with opioid (after both fixes)
+- A step-down rate was recorded and printed at time t but applied to the integration step one step later (0.1 min) in `generateCompleteProtocol` and `simulateAdvancedStepDownProtocol`. Replaying the recorded rates through the exact solution now matches (0.37 % -> 0.00 % maximum Ce error)
+
+### Tests
+- 12 tests: the four engines against the exact solution at <1e-6 relative (bolus, infusion, rate change, later bolus, stop), the engines against each other, the Eleveld 2018 reference individual (V1 6.28, V2 25.5, V3 273, CL 1.79, Q3 1.11), and a negative control (a rate in mg/h taken as mg/min is flagged). The exact-solution code is adapted from anesthesia-triad-simulator v0.8.6 (`validation/lib/exact.js`)
+- Not changed: the fat-free-mass formula in `eleveld-pk-pd.js` (see the Triad repository's comparison; under review)
+
 ## [2.6.0] - 2026-10-23
 
 ### Added
